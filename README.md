@@ -39,7 +39,7 @@ Pick<Post, 'id' | 'title'> & {
 ## Installation
 
 ```sh
-npm install pb-option-builder
+npm install pocketbase-ts
 ```
 
 ## Usage
@@ -107,7 +107,7 @@ type Relations = {
 ### Instantiating the SDK
 
 ```ts
-import { PocketBaseTS } from 'pocketbase-ts'
+import PocketBaseTS from 'pocketbase-ts'
 
 const pb = new PocketBaseTS<Schema, Relations>('http://127.0.0.1:8090')
 ```
@@ -151,7 +151,7 @@ Pick<Post, "tags" | "id" | "title"> & {
 }
 ```
 
-### Parameter type for the option builder:
+### Type for `options`:
 
 ```ts
 {
@@ -250,8 +250,7 @@ type Relations = {
 	post: Post
 }
 
-const [optionsObj, typeObj] = optionBuilder({
-	key: 'posts',
+const result = await pb.collection('posts').getFullList({
 	expand: [
 		{
 			// Without "post: Post", TS will complain and you won't get autocomplete or typesafety
