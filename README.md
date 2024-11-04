@@ -29,10 +29,10 @@ It comes with autocomplete for `fields`, `expand` and the basic `sort` options, 
 
 ```ts
 Pick<Post, 'id' | 'title'> & {
-	expand: {
-		tags: Pick<Tag, 'id' | 'name'>[]
-		comments_via_post?: Pick<Comment, 'user' | 'message'>[]
-	}
+    expand: {
+        tags: Pick<Tag, 'id' | 'name'>[]
+        comments_via_post?: Pick<Comment, 'user' | 'message'>[]
+    }
 }
 ```
 
@@ -163,10 +163,10 @@ Pick<Post, "tags" | "id" | "title"> & {
 
     // These will be passed to the SDK as is
     sort?: string
-	page?: number
+    page?: number
     filter?: string
-	perPage?: number
-	skipTotal?: boolean
+    perPage?: number
+    skipTotal?: boolean
     requestKey?: string
 }
 
