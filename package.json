@@ -1,0 +1,37 @@
+{
+	"name": "pocketbase-ts",
+	"version": "1.0.0",
+	"description": "Pocketbase SDK wrapper with more readable option syntax and better typings",
+	"author": "satohshi",
+	"keywords": [
+		"pocketbase",
+		"typescript",
+		"option",
+		"types",
+		"schema"
+	],
+	"license": "MIT",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"dev": "vitest --typecheck",
+		"build": "tsc",
+		"lint": "tsc --noEmit && prettier --check .",
+		"format": "prettier --write .",
+		"test": "vitest run --typecheck",
+		"release": "changeset publish"
+	},
+	"type": "module",
+	"dependencies": {
+		"pocketbase": "0.21.5"
+	},
+	"devDependencies": {
+		"@changesets/cli": "^2.27.9",
+		"prettier": "^3.3.3",
+		"typescript": "^5.6.3",
+		"vitest": "^2.1.3"
+	}
+}
