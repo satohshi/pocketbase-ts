@@ -11,7 +11,7 @@ on:
             - '.gitignore'
     pull_request:
         branches:
-            - main
+            - master
         paths-ignore:
             - 'REAdME.md'
             - 'LICENSE'
