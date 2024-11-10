@@ -237,7 +237,9 @@ Post & {
 }
 ```
 
-## Caveat:
+## Caveats:
+
+### Defining back-relations
 
 In order for back-relations to work, you need to have the forward-relations defined as well.
 
@@ -258,4 +260,25 @@ const result = await pb.collection('posts').getFullList({
 		},
 	],
 })
+```
+
+### Dealing with tables with exactly the same properties
+
+In the [example above](#defining-schema-and-relations), `User` and `Tag` have the exact same shape.  
+The current implementation doesn't handle cases like this very well when checking for back-relations.
+
+I am working on a fix for this, but in the meantime, you can use a workaround like this:
+
+```ts
+interface User extends PocketBaseCollection {
+	name: string
+
+	readonly _: unique symbol // add a field that can never overlap
+}
+// and/or
+interface Tag extends PocketBaseCollection {
+	name: string
+
+	readonly _: unique symbol
+}
 ```
