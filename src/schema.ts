@@ -1,8 +1,8 @@
 export interface SchemaDeclaration {
 	[collectionName: string]: {
-		type: Record<string, any> // collection type
+		type: Record<PropertyKey, any> // collection type
 		relFields?: {
-			[fieldName: string]: Record<string, any> // relation type
+			[fieldName: string]: Record<PropertyKey, any> // relation type
 		}
 	}
 }

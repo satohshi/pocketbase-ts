@@ -5,12 +5,14 @@ import type { Options } from './options.js'
 import type { PBResponseType } from './response.js'
 import type { SchemaDeclaration } from './schema.js'
 
+export type { UniqueCollection } from './type-utils.js'
+
 // ---------------------------------------------------------------------------------------------------------
 // `@ts-ignore`s are used to suppress the error caused by the type mismatch between
 // the type signature of the method in the base class and the overridden method in the subclass.
 // ---------------------------------------------------------------------------------------------------------
 
-export default class PocketBaseTS<TSchema extends SchemaDeclaration> extends PocketBase {
+export class PocketBaseTS<TSchema extends SchemaDeclaration> extends PocketBase {
 	#recordServices: { [K in keyof TSchema]?: RecordServiceTS<TSchema, K> } = {}
 
 	constructor(baseUrl?: string, authStore?: BaseAuthStore | null, lang?: string) {

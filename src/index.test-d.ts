@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, it } from 'vitest'
 
-import PocketBaseTS from './index.js'
+import { PocketBaseTS, type UniqueCollection } from './index.js'
 
 interface PocketBaseCollection {
 	id: string
@@ -8,9 +8,7 @@ interface PocketBaseCollection {
 	updated: string
 }
 
-interface User extends PocketBaseCollection {
-	name: string
-}
+type User = UniqueCollection<{ name: string } & PocketBaseCollection, 'users'>
 
 interface Post extends PocketBaseCollection {
 	author: string
@@ -56,6 +54,16 @@ describe('Type Utils', () => {
 			.getOne('')
 			.catch(() => null!)
 		expectTypeOf(post).toEqualTypeOf<Post>()
+	})
+
+	it("shouldn't allow expand for other tables even though they are the same shape", async () => {
+		await pb
+			.collection('tags')
+			.getFullList({
+				// @ts-expect-error
+				expand: [{ key: 'comments_via_user' }],
+			})
+			.catch(() => null!)
 	})
 
 	it('should only include specified fields', async () => {
