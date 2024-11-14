@@ -1,5 +1,6 @@
 import { describe, expectTypeOf, it } from 'vitest'
-import PocketBaseTS from './index.js'
+
+import { PocketBaseTS, type UniqueCollection } from './index.js'
 
 interface PocketBaseCollection {
 	id: string
@@ -7,12 +8,10 @@ interface PocketBaseCollection {
 	updated: string
 }
 
-interface User extends PocketBaseCollection {
-	name: string
-}
+type User = UniqueCollection<{ name: string } & PocketBaseCollection, 'users'>
 
 interface Post extends PocketBaseCollection {
-	user: string
+	author: string
 	title: string
 	tags: Array<string>
 }
@@ -28,25 +27,26 @@ interface Comment extends PocketBaseCollection {
 }
 
 type Schema = {
-	users: User
-	posts: Post
-	tags: Tag
-	comments: Comment
-}
-
-type Relations = {
-	post: Post
-	user: User
-	tags?: Array<Tag>
-
-	posts_via_tags?: Array<Post>
-	posts_via_user?: Array<Post>
-	comments_via_post?: Array<Comment>
-	comments_via_user?: Array<Comment>
+	users: { type: User }
+	posts: {
+		type: Post
+		relFields: {
+			author: User
+			tags?: Tag[]
+		}
+	}
+	tags: { type: Tag }
+	comments: {
+		type: Comment
+		relFields: {
+			post: Post
+			user: User
+		}
+	}
 }
 
 describe('Type Utils', () => {
-	const pb = new PocketBaseTS<Schema, Relations>()
+	const pb = new PocketBaseTS<Schema>()
 
 	it("shouldn't touch type when no option is provided", async () => {
 		const post = await pb
@@ -54,6 +54,16 @@ describe('Type Utils', () => {
 			.getOne('')
 			.catch(() => null!)
 		expectTypeOf(post).toEqualTypeOf<Post>()
+	})
+
+	it("shouldn't allow expand for other tables even though they are the same shape", async () => {
+		await pb
+			.collection('tags')
+			.getFullList({
+				// @ts-expect-error
+				expand: [{ key: 'comments_via_user' }],
+			})
+			.catch(() => null!)
 	})
 
 	it('should only include specified fields', async () => {
@@ -67,13 +77,37 @@ describe('Type Utils', () => {
 		expectTypeOf(post).toEqualTypeOf<Pick<Post, 'id' | 'title'>>()
 	})
 
+	it('should be able to handle modifiers like :excerpt at top level', async () => {
+		const post = await pb
+			.collection('posts')
+			.getOne('', {
+				fields: ['id', 'title:excerpt(10)'],
+			})
+			.catch(() => null!)
+
+		expectTypeOf(post).toEqualTypeOf<Pick<Post, 'id' | 'title'>>()
+	})
+
+	it('should be able to handle modifiers like :excerpt on expanded item', async () => {
+		const post = await pb
+			.collection('posts')
+			.getOne('', {
+				expand: [{ key: 'comments_via_post', fields: ['message:excerpt(10)'] }],
+			})
+			.catch(() => null!)
+
+		expectTypeOf(post).toEqualTypeOf<
+			Post & { expand?: { comments_via_post: Array<Pick<Comment, 'message'>> } }
+		>()
+	})
+
 	it('should correctly type expand (depth=1)', async () => {
 		// single required relation
 		const postWithUser = await pb
 			.collection('posts')
-			.getOne('', { expand: [{ key: 'user' }] })
+			.getOne('', { expand: [{ key: 'author' }] })
 			.catch(() => null!)
-		expectTypeOf(postWithUser).toEqualTypeOf<Post & { expand: { user: User } }>()
+		expectTypeOf(postWithUser).toEqualTypeOf<Post & { expand: { author: User } }>()
 
 		// single optional forward relation
 		const postWithTags = await pb
@@ -88,7 +122,9 @@ describe('Type Utils', () => {
 			.getOne('', { expand: [{ key: 'comments_via_post' }] })
 			.catch(() => null!)
 		expectTypeOf(postWithComments).toEqualTypeOf<
-			Post & { expand?: { comments_via_post: Array<Comment> } }
+			Post & {
+				expand?: { comments_via_post: Array<Comment> }
+			}
 		>()
 
 		// multiple optional relations
@@ -97,16 +133,61 @@ describe('Type Utils', () => {
 			.getOne('', { expand: [{ key: 'comments_via_post' }, { key: 'tags' }] })
 			.catch(() => null!)
 		expectTypeOf(postWithCommentsAndTags).toEqualTypeOf<
-			Post & { expand?: { comments_via_post?: Array<Comment>; tags?: Array<Tag> } }
+			Post & {
+				expand?: {
+					comments_via_post?: Array<Comment>
+					tags?: Array<Tag>
+				}
+			}
 		>()
 
 		// optional and required relations mixed
 		const postWithCommentsAndUser = await pb
 			.collection('posts')
-			.getOne('', { expand: [{ key: 'comments_via_post' }, { key: 'user' }] })
+			.getOne('', { expand: [{ key: 'comments_via_post' }, { key: 'author' }] })
 			.catch(() => null!)
 		expectTypeOf(postWithCommentsAndUser).toEqualTypeOf<
-			Post & { expand: { comments_via_post?: Array<Comment>; user: User } }
+			Post & {
+				expand: { comments_via_post?: Array<Comment> } & {
+					author: User
+				}
+			}
+		>()
+	})
+
+	it('should let you override back-relations', async () => {
+		type Schema2 = {
+			users: { type: User }
+			posts: {
+				type: Post
+				relFields: {
+					user: User
+					tags?: Tag[]
+
+					comments_via_post: Comment
+				}
+			}
+			tags: { type: Tag }
+			comments: {
+				type: Comment
+				relFields: {
+					post: Post
+					user: User
+				}
+			}
+		}
+
+		const pb2 = new PocketBaseTS<Schema2>()
+
+		const postWithComments = await pb2
+			.collection('posts')
+			.getOne('', { expand: [{ key: 'comments_via_post' }] })
+			.catch(() => null!)
+
+		expectTypeOf(postWithComments).toEqualTypeOf<
+			Post & {
+				expand: { comments_via_post: Comment }
+			}
 		>()
 	})
 
@@ -157,7 +238,7 @@ describe('Type Utils', () => {
 			.getOne('', {
 				expand: [
 					{
-						key: 'posts_via_user',
+						key: 'posts_via_author',
 						expand: [
 							{ key: 'comments_via_post', fields: ['message'] },
 							{
@@ -173,7 +254,7 @@ describe('Type Utils', () => {
 		expectTypeOf(user).toEqualTypeOf<
 			User & {
 				expand?: {
-					posts_via_user: Array<
+					posts_via_author: Array<
 						Post & {
 							expand?: {
 								comments_via_post?: Array<Pick<Comment, 'message'>>
