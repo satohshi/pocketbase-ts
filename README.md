@@ -5,10 +5,10 @@ A small wrapper around the official [PocketBase JavaScript SDK](https://github.c
 This is how you would normally write options for the PocketBase SDK:
 
 ```js
-{
-	expand: 'comments_via_post,tags',
-	fields: 'id,title,expand.comments_via_post.user,expand.comments_via_post.message,expand.tags.id,expand.tags.name'
-}
+const postsWithAuthorAndComments = await pb.collection('posts').getFullList({
+	expand: 'author,comments_via_post'
+	fields: 'id,title,expand.author.id,expand.author.name,expand.comments_via_post.id,expand.comments_via_post.message',
+})
 ```
 
 Writing options manually like this is very error-prone, and makes the code very hard to read and maintain.
@@ -16,13 +16,16 @@ Writing options manually like this is very error-prone, and makes the code very 
 This wrapper allows you to write it like this instead:
 
 ```js
-{
+const postsWithAuthorAndComments = await pb.collection('posts').getFullList({
 	fields: ['id', 'title'],
 	expand: [
-		{ key: 'tags', fields: ['id', 'name'] },
-		{ key: 'comments_via_post', fields: ['user', 'message'] },
-	]
-}
+		{ key: 'author', fields: ['id', 'name'] },
+		{
+			key: 'comments_via_post',
+			fields: ['id', 'message'],
+		},
+	],
+})
 ```
 
 It comes with autocomplete for `fields`, `expand`, `key`, and the basic `sort` options, and also properly **types the response** as:
@@ -30,8 +33,8 @@ It comes with autocomplete for `fields`, `expand`, `key`, and the basic `sort` o
 ```ts
 Pick<Post, 'id' | 'title'> & {
 	expand: {
-		tags: Pick<Tag, 'id' | 'name'>[]
-		comments_via_post?: Pick<Comment, 'user' | 'message'>[]
+		author: Pick<User, 'id' | 'name'>
+		comments_via_post?: Pick<Comment, 'id' | 'message'>[]
 	}
 }
 ```
