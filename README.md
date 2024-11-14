@@ -110,7 +110,7 @@ type Schema = {
 ### Instantiating the SDK
 
 ```ts
-import PocketBaseTS from 'pocketbase-ts'
+import { PocketBaseTS } from 'pocketbase-ts'
 
 const pb = new PocketBaseTS<Schema>('http://127.0.0.1:8090')
 ```
@@ -253,21 +253,14 @@ type Schema = {
 
 ### Dealing with tables with exactly the same properties
 
-In the [example above](#defining-schema-and-relations), `User` and `Tag` have the exact same shape.  
-The current implementation doesn't handle cases like this very well when checking for back-relations.
-
-I am working on a fix for this, but in the meantime, you can use a workaround like this:
+In the [example above](#defining-schema), `User` and `Tag` have the exact same shape, and there is no way for TypeScript to differentiate between the two.  
+To make it clear to TypeScript that they are different, you can use the `UniqueCollection` utility type provided by this package.
 
 ```ts
-interface User extends PocketBaseCollection {
-	name: string
+import type { UniqueCollection } from 'pocketbase-ts'
 
-	readonly _: unique symbol // add a field that can never overlap
-}
-// and/or
-interface Tag extends PocketBaseCollection {
-	name: string
-
-	readonly _: unique symbol
-}
+// pass in the collection name as the second type argument to ensure uniqueness
+type User = UniqueCollection<{ name: string } & PocketBaseCollection, 'users'>
 ```
+
+Without this, TypeScript will confuse back-relations pointing to `User` and `Tag` and suggest that `users` can be expanded with `posts_via_tags`, etc.

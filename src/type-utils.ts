@@ -1,3 +1,18 @@
+declare const uniqueIdentifier: unique symbol
+
+/**
+ * Makes the type unique without polluting the object with extra properties. \
+ * You only need to use this if you have multiple collections with the **exact** same shape.
+ *
+ * @template T - The type for the collection
+ * @template U - A **unique** identifier (e.g. name of the collection)
+ * @example
+ * type User = UniqueCollection<{ name: string }, 'users'>
+ */
+export type UniqueCollection<T, U extends string> = T & {
+	readonly [uniqueIdentifier]: U
+}
+
 type RemoveModifier<T extends string> = T extends `${infer U}:${string}` ? U : T
 
 /** Removes modifiers and turns `fields` array to union if it's not `undefined` i.e. not specified */
