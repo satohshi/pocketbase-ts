@@ -1,11 +1,5 @@
-type OptionsOfficialSyntax = Record<string, unknown>
-
-type Options = Omit<Expand, 'key'> & Record<string, unknown>
-type Expand = {
-	key: string
-	fields?: string[]
-	expand?: Expand[]
-}
+type Options = Omit<Expand, 'key'>
+type Expand = { key: string; fields?: string[]; expand?: Expand[] }
 
 /** @internal */
 // baseKey includes "." at the end so that we don't have to check if it's the top level or not
@@ -44,11 +38,11 @@ const getExpand = (option: Expand[], baseKey = ''): string => {
 
 /** @internal */
 export const processOptions = (
-	option: Options | OptionsOfficialSyntax | undefined
+	option: Options | Record<string, unknown> | undefined
 ): Record<string, unknown> | undefined => {
 	if (
 		!option ||
-		// if these are already of type `string`, it's already been processed and the method was internally called
+		// if these are already of type `string`, it's already been processed and the method was called internally
 		typeof option.fields === 'string' ||
 		typeof option.expand === 'string'
 	) {
@@ -62,7 +56,7 @@ export const processOptions = (
 
 	const res = { ...option, fields, expand }
 
-	// remove undefined values. it'll throw error if left unhandled
+	// remove undefined values. the sdk will throw error if left unhandled
 	for (const [key, value] of Object.entries(res)) {
 		// `null` is a valid value for `requestKey` and should not be removed
 		if (value === undefined) {
