@@ -1,5 +1,6 @@
-import { processOptions } from './utils.js'
 import { describe, expect, it } from 'vitest'
+
+import { processOptions } from './option-parser.js'
 
 describe('processOptions', () => {
 	it('should return undefined if option is undefined', () => {
@@ -29,7 +30,7 @@ describe('processOptions', () => {
 		expect(processOptions(option)).toEqual(expected)
 	})
 
-	it('should leave modifier as is', async () => {
+	it('should leave modifier as is', () => {
 		const option = { fields: ['field1:excerpt(1)', 'field2:excerpt(10,true)'] }
 		const expected = { fields: 'field1:excerpt(1),field2:excerpt(10,true)' }
 		expect(processOptions(option)).toEqual(expected)
