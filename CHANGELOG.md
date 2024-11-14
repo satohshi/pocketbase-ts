@@ -4,7 +4,7 @@
 
 ### Minor Changes
 
--   5131ee1: new syntax for schema declaration (fixes #2)
+-   5131ee1: new syntax for schema declaration (fixes #3)
 
 ### Patch Changes
 
