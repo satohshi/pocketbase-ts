@@ -55,6 +55,10 @@ pnpm add pocketbase-ts
 
 ### Defining schema
 
+> [!TIP]
+> I recommend using [this hook](https://github.com/satohshi/pocketbase-ts-schema-generator) to generate the schema during development.  
+> It will watch for any changes made to the collections and update the schema file accordingly, keeping everything in sync.
+
 Below is an example of how you would define the schema for [this](https://pocketbase.io/docs/working-with-relations/) in the PocketBase docs.
 
 ```ts
