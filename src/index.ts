@@ -1,4 +1,11 @@
-import PocketBase, { RecordService, type BaseAuthStore, type ListResult } from 'pocketbase'
+import PocketBase, {
+	RecordService,
+	type BaseAuthStore,
+	type ListResult,
+	type RecordSubscription,
+	type SendOptions,
+	type UnsubscribeFunc,
+} from 'pocketbase'
 
 import { processOptions } from './option-parser.js'
 import type { Options } from './options.js'
@@ -39,6 +46,14 @@ class RecordServiceTS<
 > extends RecordService {
 	constructor(client: PocketBaseTS<any>, idOrName: TKey & string) {
 		super(client as unknown as PocketBase, idOrName)
+	}
+
+	override async subscribe(
+		topic: string,
+		callback: (data: RecordSubscription<TSchema[TKey]['type']>) => void,
+		options?: SendOptions
+	): Promise<UnsubscribeFunc> {
+		return super.subscribe(topic, callback, options)
 	}
 
 	override async getFullList<const TOptions extends _ListOptions>(
