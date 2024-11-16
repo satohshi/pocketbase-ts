@@ -17,8 +17,8 @@ type BackRelationKey<
 	TCollectionName extends keyof TSchema,
 	TypeToLookFor,
 > = keyof {
-	[K in keyof TSchema[TCollectionName]['relFields'] as IsSameShape<
-		GetSingleType<TSchema[TCollectionName]['relFields'][K]>,
+	[K in keyof TSchema[TCollectionName]['relations'] as IsSameShape<
+		GetSingleType<TSchema[TCollectionName]['relations'][K]>,
 		TypeToLookFor
 	> extends true
 		? `${TCollectionName & string}_via_${K & string}`
@@ -47,9 +47,9 @@ type RelHelper<TSchema extends SchemaDeclaration, T> = {
 /** Relations that are explicitly defined in the schema */
 type ExplicitRelations<TSchema extends SchemaDeclaration> = {
 	[Collection in keyof TSchema]: {
-		[RelField in keyof TSchema[Collection]['relFields']]-?: RelHelper<
+		[Relation in keyof TSchema[Collection]['relations']]-?: RelHelper<
 			TSchema,
-			TSchema[Collection]['relFields'][RelField]
+			TSchema[Collection]['relations'][Relation]
 		>
 	}
 }

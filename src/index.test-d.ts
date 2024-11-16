@@ -30,7 +30,7 @@ type Schema = {
 	users: { type: User }
 	posts: {
 		type: Post
-		relFields: {
+		relations: {
 			author: User
 			tags?: Tag[]
 		}
@@ -38,14 +38,14 @@ type Schema = {
 	tags: { type: Tag }
 	comments: {
 		type: Comment
-		relFields: {
+		relations: {
 			post: Post
 			user: User
 		}
 	}
 }
 
-describe('Type Utils', () => {
+describe('pocketbase-ts', () => {
 	const pb = new PocketBaseTS<Schema>()
 
 	it("shouldn't touch type when no option is provided", async () => {
@@ -160,7 +160,7 @@ describe('Type Utils', () => {
 			users: { type: User }
 			posts: {
 				type: Post
-				relFields: {
+				relations: {
 					user: User
 					tags?: Tag[]
 
@@ -170,7 +170,7 @@ describe('Type Utils', () => {
 			tags: { type: Tag }
 			comments: {
 				type: Comment
-				relFields: {
+				relations: {
 					post: Post
 					user: User
 				}

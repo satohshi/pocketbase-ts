@@ -94,7 +94,7 @@ type Schema = {
 	users: { type: User }
 	posts: {
 		type: Post
-		relFields: {
+		relations: {
 			// field name as key
 			author: User
 			// add "?" modifier to annotate optional relation fields
@@ -104,7 +104,7 @@ type Schema = {
 	tags: { type: Tag }
 	comments: {
 		type: Comment
-		relFields: {
+		relations: {
 			post: Post
 			user: User
 		}
@@ -169,7 +169,7 @@ Pick<Post, "tags" | "id" | "title"> & {
 interface SchemaDeclaration {
 	[collectionName: string]: {
 		type: Record<string, any> // collection type
-		relFields?: {
+		relations?: {
 			[fieldName: string]: Record<string, any> // relation type
 		}
 	}
@@ -250,7 +250,7 @@ type Schema = {
 	...
 	users: {
 		type: User
-		relFields: {
+		relations: {
 			...
 -			userDetail_via_user?: UserDetail[] // default (implicit/inferred)
 +			userDetail_via_user: UserDetail // made non-nullable by removing the `?`
