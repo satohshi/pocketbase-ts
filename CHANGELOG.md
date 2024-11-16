@@ -1,5 +1,11 @@
 # pocketbase-ts
 
+## 1.2.0
+
+### Minor Changes
+
+-   821e2f3: rename `relFields` to `relations`
+
 ## 1.1.1
 
 ### Patch Changes
