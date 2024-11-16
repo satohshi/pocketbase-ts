@@ -1,5 +1,12 @@
 # pocketbase-ts
 
+## 1.1.1
+
+### Patch Changes
+
+-   def734e: move official sdk to peerDependeicies
+-   6d03103: type `subscribe` method
+
 ## 1.1.0
 
 ### Minor Changes
