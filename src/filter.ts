@@ -2,21 +2,6 @@ import type { RelParser } from './relation.js'
 import type { SchemaDeclaration } from './schema.js'
 
 type ArrayModifier = '' | ':length' | ':each'
-type Macros =
-	| '@now'
-	| '@second'
-	| '@minute'
-	| '@hour'
-	| '@weekday'
-	| '@day'
-	| '@month'
-	| '@year'
-	| '@todayStart'
-	| '@todayEnd'
-	| '@monthStart'
-	| '@monthEnd'
-	| '@yearStart'
-	| '@yearEnd'
 
 type Increment<N extends number> = [1, 2, 3, 4, 5, 6][N]
 
@@ -60,5 +45,5 @@ export type FilterHelper<
 	TKey extends keyof TSchema,
 	TMaxDepth extends number,
 	IncludeModifier extends boolean,
-	_Filterable extends string = Macros | FilterString<TSchema, TKey, TMaxDepth, IncludeModifier>,
+	_Filterable extends string = FilterString<TSchema, TKey, TMaxDepth, IncludeModifier>,
 > = (arg: { $: (str: TemplateStringsArray, ...values: _Filterable[]) => string }) => string
