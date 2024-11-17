@@ -163,13 +163,14 @@ Pick<Post, "tags" | "id" | "title"> & {
 }
 ```
 
-## Filter helper
+## Helper for `filter` & `sort`
 
-While you can use the normal string-based filter, you can also use the provided `f` tagged template literal helper to get intellisense for the field names.
+While you can still write `filter` and `sort` as string, you can also use the provided `$` tagged template literal helper to get intellisense for the field names.
 
 ```ts
 const result = await pb.collection('posts').getFullList({
-	filter: ({ f }) => f`${'author.role'} = "admin" && ${'comments_via_post.message'} ?~ 'hello'`,
+	filter: ({ $ }) => $`${'author.role'} = "admin" && ${'comments_via_post.message'} ?~ 'hello'`,
+	sort: ({ $ }) => $`${'created'},${'author.name'}`,
 	expand: [{ key: 'comments_via_post' }],
 })
 ```
@@ -179,7 +180,7 @@ This function is merely there to provide you with intellisense and help mitigate
 
 ### Maximum expand depth
 
-While PocketBase supports expanding relations up to 6 levels deep, the number of filterable fields increases exponentially with each level.  
+While PocketBase supports expanding relations up to 6 levels deep, the number of fields increases exponentially with each level.  
 The performance hit was very noticeable when I tried to set it to 6 even with the simple schema in the example above.
 
 As such, I've set the maximum depth to 2 by default.

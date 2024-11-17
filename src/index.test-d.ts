@@ -65,11 +65,35 @@ describe('pocketbase-ts', () => {
 			.catch(() => null!)
 	})
 
-	it("should detect when there's a typo in the filter", () => {
+	it("should detect when there's a typo in the filter or sort", () => {
 		pb.collection('posts')
 			.getFullList({
 				// @ts-expect-error
-				filter: ({ f }) => f`${'tags:lengths'} > 0`,
+				filter: ({ $ }) => $`${'tags:lengths'} > 0`,
+			})
+			.catch(() => null!)
+
+		pb.collection('posts')
+			.getFullList({
+				// @ts-expect-error
+				sort: ({ $ }) => $`${'tegs'}`,
+			})
+			.catch(() => null!)
+	})
+
+	it('should include modifiers in filter option', () => {
+		pb.collection('posts')
+			.getFullList({
+				filter: ({ $ }) => $`${'tags:length'}`,
+			})
+			.catch(() => null!)
+	})
+
+	it("shouldn't include modifiers in sort option", () => {
+		pb.collection('posts')
+			.getFullList({
+				// @ts-expect-error
+				sort: ({ $ }) => $`${'tags:length'}`,
 			})
 			.catch(() => null!)
 	})

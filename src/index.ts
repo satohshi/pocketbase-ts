@@ -6,7 +6,7 @@ import PocketBase, {
 	type UnsubscribeFunc,
 } from 'pocketbase'
 
-import { processOptions, processFilter } from './option-parser.js'
+import { processOptions, processFilterAndSort } from './option-parser.js'
 import type { Options } from './options.js'
 import type { PBResponseType } from './response.js'
 import type { SchemaDeclaration } from './schema.js'
@@ -95,10 +95,10 @@ class RecordServiceTS<
 
 	// @ts-ignore
 	override async getFirstListItem<const TOptions extends _ListOptions>(
-		filter: string | FilterHelper<TSchema, TKey, TMaxDepth>,
+		filter: string | FilterHelper<TSchema, TKey, TMaxDepth, true>,
 		options?: TOptions
 	): Promise<PBResponseType<TSchema, TKey, TOptions, TMaxDepth>> {
-		const processedFilter = processFilter(filter)
+		const processedFilter = processFilterAndSort(filter)
 		const processedOption = processOptions(options)
 		return super.getFirstListItem(processedFilter, processedOption)
 	}

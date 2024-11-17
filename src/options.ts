@@ -31,8 +31,9 @@ export type Options<
 					| '@random'
 					| `${'' | '-'}${keyof TSchema[Key]['type'] & string}`
 					| (string & {})
+					| FilterHelper<TSchema, Key, TMaxDepth, false>
 
-				filter?: string | FilterHelper<TSchema, Key, TMaxDepth>
+				filter?: string | FilterHelper<TSchema, Key, TMaxDepth, true>
 				page?: number
 				perPage?: number
 				skipTotal?: boolean

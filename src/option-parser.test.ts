@@ -83,11 +83,29 @@ describe('processOptions', () => {
 
 	it('should process filter accordingly if it is a function', () => {
 		const option = {
-			filter: ({ f }) => f`${'field1'} = "value1" && ${'field2'} = "value2"`,
+			filter: ({ $ }) => $`${'field1'} = "value1" && ${'field2'} = "value2"`,
 		}
 		const expected = {
 			filter: 'field1 = "value1" && field2 = "value2"',
 		}
+		expect(processOptions(option)).toEqual(expected)
+	})
+
+	it("shouldn't touch sort if it's a string", () => {
+		const option = { sort: 'field1"' }
+		expect(processOptions(option)).toEqual(option)
+	})
+
+	it("shouldn't do anything if sort is not defined", () => {
+		const option = {}
+		expect(processOptions(option)).toEqual(option)
+	})
+
+	it('should process sort accordingly if it is a function', () => {
+		const option = {
+			sort: ({ $ }) => $`${'field1'},${'field2'}`,
+		}
+		const expected = { sort: 'field1,field2' }
 		expect(processOptions(option)).toEqual(expected)
 	})
 })
