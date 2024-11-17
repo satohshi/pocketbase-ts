@@ -3,7 +3,6 @@ import PocketBase, {
 	type BaseAuthStore,
 	type ListResult,
 	type RecordSubscription,
-	type SendOptions,
 	type UnsubscribeFunc,
 } from 'pocketbase'
 
@@ -48,12 +47,13 @@ class RecordServiceTS<
 		super(client as unknown as PocketBase, idOrName)
 	}
 
-	override async subscribe(
+	override async subscribe<const TOption extends _ViewOptions>(
 		topic: string,
-		callback: (data: RecordSubscription<TSchema[TKey]['type']>) => void,
-		options?: SendOptions
+		callback: (data: RecordSubscription<PBResponseType<TSchema, TKey, TOption>>) => void,
+		options?: TOption
 	): Promise<UnsubscribeFunc> {
-		return super.subscribe(topic, callback, options)
+		const processedOption = processOptions(options)
+		return super.subscribe(topic, callback, processedOption)
 	}
 
 	override async getFullList<const TOptions extends _ListOptions>(
