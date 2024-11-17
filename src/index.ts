@@ -6,10 +6,11 @@ import PocketBase, {
 	type UnsubscribeFunc,
 } from 'pocketbase'
 
-import { processOptions } from './option-parser.js'
+import { processOptions, processFilter } from './option-parser.js'
 import type { Options } from './options.js'
 import type { PBResponseType } from './response.js'
 import type { SchemaDeclaration } from './schema.js'
+import type { FilterHelper } from './filter.js'
 
 export type { UniqueCollection } from './type-utils.js'
 
@@ -18,8 +19,11 @@ export type { UniqueCollection } from './type-utils.js'
 // the type signature of the method in the base class and the overridden method in the subclass.
 // ---------------------------------------------------------------------------------------------------------
 
-export class PocketBaseTS<TSchema extends SchemaDeclaration> extends PocketBase {
-	#recordServices: { [K in keyof TSchema]?: RecordServiceTS<TSchema, K> } = {}
+export class PocketBaseTS<
+	TSchema extends SchemaDeclaration,
+	TMaxDepth extends 0 | 1 | 2 | 3 | 4 | 5 | 6 = 2,
+> extends PocketBase {
+	#recordServices: { [K in keyof TSchema]?: RecordServiceTS<TSchema, K, TMaxDepth> } = {}
 
 	constructor(baseUrl?: string, authStore?: BaseAuthStore | null, lang?: string) {
 		super(baseUrl, authStore, lang)
@@ -28,9 +32,12 @@ export class PocketBaseTS<TSchema extends SchemaDeclaration> extends PocketBase 
 	// @ts-ignore
 	override collection<TName extends (keyof TSchema & string) | (string & {})>(
 		idOrName: TName
-	): RecordServiceTS<TSchema, TName> {
+	): RecordServiceTS<TSchema, TName, TMaxDepth> {
 		if (!this.#recordServices[idOrName]) {
-			this.#recordServices[idOrName] = new RecordServiceTS<TSchema, TName>(this, idOrName)
+			this.#recordServices[idOrName] = new RecordServiceTS<TSchema, TName, TMaxDepth>(
+				this,
+				idOrName
+			)
 		}
 
 		return this.#recordServices[idOrName]
@@ -40,8 +47,19 @@ export class PocketBaseTS<TSchema extends SchemaDeclaration> extends PocketBase 
 class RecordServiceTS<
 	TSchema extends SchemaDeclaration,
 	TKey extends keyof TSchema,
-	_ListOptions extends Options<TSchema, TKey, true> = Options<TSchema, TKey, true>,
-	_ViewOptions extends Options<TSchema, TKey, false> = Options<TSchema, TKey, false>,
+	TMaxDepth extends number,
+	_ListOptions extends Options<TSchema, TKey, TMaxDepth, true> = Options<
+		TSchema,
+		TKey,
+		TMaxDepth,
+		true
+	>,
+	_ViewOptions extends Options<TSchema, TKey, TMaxDepth, false> = Options<
+		TSchema,
+		TKey,
+		TMaxDepth,
+		false
+	>,
 > extends RecordService {
 	constructor(client: PocketBaseTS<any>, idOrName: TKey & string) {
 		super(client as unknown as PocketBase, idOrName)
@@ -49,7 +67,9 @@ class RecordServiceTS<
 
 	override async subscribe<const TOption extends _ViewOptions>(
 		topic: string,
-		callback: (data: RecordSubscription<PBResponseType<TSchema, TKey, TOption>>) => void,
+		callback: (
+			data: RecordSubscription<PBResponseType<TSchema, TKey, TOption, TMaxDepth>>
+		) => void,
 		options?: TOption
 	): Promise<UnsubscribeFunc> {
 		const processedOption = processOptions(options)
@@ -58,7 +78,7 @@ class RecordServiceTS<
 
 	override async getFullList<const TOptions extends _ListOptions>(
 		options?: TOptions
-	): Promise<Array<PBResponseType<TSchema, TKey, TOptions>>> {
+	): Promise<Array<PBResponseType<TSchema, TKey, TOptions, TMaxDepth>>> {
 		const processedOption = processOptions(options)
 		return super.getFullList(processedOption)
 	}
@@ -68,25 +88,26 @@ class RecordServiceTS<
 		page = 1,
 		perPage = 30,
 		options?: TOptions
-	): Promise<ListResult<PBResponseType<TSchema, TKey, TOptions>>> {
+	): Promise<ListResult<PBResponseType<TSchema, TKey, TOptions, TMaxDepth>>> {
 		const processedOption = processOptions(options)
 		return super.getList(page, perPage, processedOption)
 	}
 
 	// @ts-ignore
 	override async getFirstListItem<const TOptions extends _ListOptions>(
-		filter: string,
+		filter: string | FilterHelper<TSchema, TKey, TMaxDepth>,
 		options?: TOptions
-	): Promise<PBResponseType<TSchema, TKey, TOptions>> {
+	): Promise<PBResponseType<TSchema, TKey, TOptions, TMaxDepth>> {
+		const processedFilter = processFilter(filter)
 		const processedOption = processOptions(options)
-		return super.getFirstListItem(filter, processedOption)
+		return super.getFirstListItem(processedFilter, processedOption)
 	}
 
 	// @ts-ignore
 	override async getOne<const TOptions extends _ViewOptions>(
 		id: string,
 		options?: TOptions
-	): Promise<PBResponseType<TSchema, TKey, TOptions>> {
+	): Promise<PBResponseType<TSchema, TKey, TOptions, TMaxDepth>> {
 		const processedOption = processOptions(options)
 		return super.getOne(id, processedOption)
 	}
@@ -98,7 +119,7 @@ class RecordServiceTS<
 			| { [key: string]: any }
 			| FormData,
 		options?: TOptions
-	): Promise<PBResponseType<TSchema, TKey, TOptions>> {
+	): Promise<PBResponseType<TSchema, TKey, TOptions, TMaxDepth>> {
 		const processedOption = processOptions(options)
 		return super.create(bodyParams, processedOption)
 	}
@@ -111,7 +132,7 @@ class RecordServiceTS<
 			| { [key: string]: any }
 			| FormData,
 		options?: TOptions
-	): Promise<PBResponseType<TSchema, TKey, TOptions>> {
+	): Promise<PBResponseType<TSchema, TKey, TOptions, TMaxDepth>> {
 		const processedOption = processOptions(options)
 		return super.update(id, bodyParams, processedOption)
 	}

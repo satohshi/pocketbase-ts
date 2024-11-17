@@ -163,6 +163,33 @@ Pick<Post, "tags" | "id" | "title"> & {
 }
 ```
 
+## Filter helper
+
+While you can use the normal string-based filter, you can also use the provided `f` tagged template literal helper to get intellisense for the field names.
+
+```ts
+const result = await pb.collection('posts').getFullList({
+	filter: ({ f }) => f`${'author.role'} = "admin" && ${'comments_via_post.message'} ?~ 'hello'`,
+	expand: [{ key: 'comments_via_post' }],
+})
+```
+
+This function is merely there to provide you with intellisense and help mitigate typos. It does not do any type narrowing or validation.  
+(i.e. the example above will still have `?` modifier on `expand` in the response type.)
+
+### Maximum expand depth
+
+While PocketBase supports expanding relations up to 6 levels deep, the number of filterable fields increases exponentially with each level.  
+The performance hit was very noticeable when I tried to set it to 6 even with the simple schema in the example above.
+
+As such, I've set the maximum depth to 2 by default.
+
+However, should you wish to expand further, you can adjust the maximum depth by passing it as the second type argument when instantiating the SDK.
+
+```ts
+const pb = new PocketBaseTS<Schema, 6>('')
+```
+
 ## Type for `Schema`:
 
 ```ts

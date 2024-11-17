@@ -1,5 +1,13 @@
-type Options = Omit<Expand, 'key'>
-type Expand = { key: string; fields?: string[]; expand?: Expand[] }
+type Options = {
+	fields?: string[]
+	expand?: Expand[]
+	filter?:
+		| string
+		| ((arg: { f: (str: TemplateStringsArray, ...values: string[]) => string }) => string)
+}
+interface Expand extends Omit<Options, 'filter'> {
+	key: string
+}
 
 /** @internal */
 // baseKey includes "." at the end so that we don't have to check if it's the top level or not
@@ -37,6 +45,18 @@ const getExpand = (option: Expand[], baseKey = ''): string => {
 }
 
 /** @internal */
+const f = (str: TemplateStringsArray, ...values: string[]): string => {
+	return values.reduce<string>((acc, val, i) => acc + val + str[i + 1], str[0]!)
+}
+
+/** @internal */
+export const processFilter = <T extends Options['filter']>(
+	filter: T
+): string | (undefined extends T ? undefined : never) => {
+	return typeof filter === 'function' ? filter({ f }) : (filter as any)
+}
+
+/** @internal */
 export const processOptions = (
 	option: Options | Record<string, unknown> | undefined
 ): Record<string, unknown> | undefined => {
@@ -53,8 +73,9 @@ export const processOptions = (
 	const fields = JSON.stringify(option).includes('"fields"')
 		? getFields(option as Options)
 		: undefined
+	const filter = processFilter(option.filter as Options['filter'])
 
-	const res = { ...option, fields, expand }
+	const res = { ...option, fields, expand, filter }
 
 	// remove undefined values. the sdk will throw error if left unhandled
 	for (const [key, value] of Object.entries(res)) {

@@ -56,12 +56,20 @@ describe('pocketbase-ts', () => {
 		expectTypeOf(post).toEqualTypeOf<Post>()
 	})
 
-	it("shouldn't allow expand for other tables even though they are the same shape", async () => {
-		await pb
-			.collection('tags')
+	it("shouldn't allow expand for other tables even though they are the same shape", () => {
+		pb.collection('tags')
 			.getFullList({
 				// @ts-expect-error
 				expand: [{ key: 'comments_via_user' }],
+			})
+			.catch(() => null!)
+	})
+
+	it("should detect when there's a typo in the filter", () => {
+		pb.collection('posts')
+			.getFullList({
+				// @ts-expect-error
+				filter: ({ f }) => f`${'tags:lengths'} > 0`,
 			})
 			.catch(() => null!)
 	})

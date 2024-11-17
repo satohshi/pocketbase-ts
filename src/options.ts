@@ -1,3 +1,4 @@
+import type { FilterHelper } from './filter.js'
 import type { RelParser } from './relation.js'
 import type { SchemaDeclaration } from './schema.js'
 
@@ -8,6 +9,7 @@ type Modifier = `:excerpt(${number}${WithEllipsis})`
 export type Options<
 	TSchema extends SchemaDeclaration,
 	TKey extends keyof TSchema,
+	TMaxDepth extends number,
 	IsList extends boolean = true,
 > = {
 	[Key in TKey]: {
@@ -30,7 +32,7 @@ export type Options<
 					| `${'' | '-'}${keyof TSchema[Key]['type'] & string}`
 					| (string & {})
 
-				filter?: string
+				filter?: string | FilterHelper<TSchema, Key, TMaxDepth>
 				page?: number
 				perPage?: number
 				skipTotal?: boolean

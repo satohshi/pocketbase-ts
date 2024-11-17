@@ -68,7 +68,26 @@ describe('processOptions', () => {
 
 	it("shouldn't remove requestKey with value `null`", () => {
 		const option = { requestKey: null }
-		const expected = { requestKey: null }
+		expect(processOptions(option)).toEqual(option)
+	})
+
+	it("shouldn't touch filter if it's a string", () => {
+		const option = { filter: 'field1 = "value1"' }
+		expect(processOptions(option)).toEqual(option)
+	})
+
+	it("shouldn't do anything if filter is not defined", () => {
+		const option = {}
+		expect(processOptions(option)).toEqual(option)
+	})
+
+	it('should process filter accordingly if it is a function', () => {
+		const option = {
+			filter: ({ f }) => f`${'field1'} = "value1" && ${'field2'} = "value2"`,
+		}
+		const expected = {
+			filter: 'field1 = "value1" && field2 = "value2"',
+		}
 		expect(processOptions(option)).toEqual(expected)
 	})
 })
