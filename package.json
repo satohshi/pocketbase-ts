@@ -1,6 +1,6 @@
 {
 	"name": "pocketbase-ts",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"description": "Pocketbase SDK wrapper with more readable option syntax and better typings",
 	"author": "satohshi",
 	"keywords": [

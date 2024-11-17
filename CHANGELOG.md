@@ -1,5 +1,13 @@
 # pocketbase-ts
 
+## 1.2.1
+
+### Patch Changes
+
+-   5986225: add helper for writing `filter`
+-   5b25707: add helper for writing `sort`
+-   c93ab58: allow the same option syntax in subscribe
+
 ## 1.2.0
 
 ### Minor Changes
