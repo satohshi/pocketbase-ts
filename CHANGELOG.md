@@ -1,5 +1,12 @@
 # pocketbase-ts
 
+## 1.2.2
+
+### Patch Changes
+
+-   7844946: remove macros from helper func
+-   7b55c75: fix peer dependency version for pocketbase
+
 ## 1.2.1
 
 ### Patch Changes
