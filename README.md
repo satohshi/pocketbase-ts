@@ -74,7 +74,7 @@ interface User extends PocketBaseCollection {
 
 interface Post extends PocketBaseCollection {
 	// relation fields are defined as strings because they are IDs of the related items
-	author: string 
+	author: string
 	title: string
 	tags: Array<string>
 }
