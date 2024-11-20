@@ -28,7 +28,7 @@ const postsWithAuthorAndComments = await pb.collection('posts').getFullList({
 })
 ```
 
-It comes with autocomplete for `fields`, `expand`, `key`, and the basic `sort` options, and also properly **types the response** as:
+It comes with autocomplete for `key`, `fields`, `expand`, `filter`, and `sort` options, and also properly **types the response** as:
 
 ```ts
 Pick<Post, 'id' | 'title'> & {
@@ -73,7 +73,8 @@ interface User extends PocketBaseCollection {
 }
 
 interface Post extends PocketBaseCollection {
-	author: string
+	// relation fields are defined as strings because they are IDs of the related items
+	author: string 
 	title: string
 	tags: Array<string>
 }
@@ -98,7 +99,7 @@ type Schema = {
 			// field name as key
 			author: User
 			// add "?" modifier to annotate optional relation fields
-			tags?: Tag[]
+			tags?: Array<Tag>
 		}
 	}
 	tags: { type: Tag }
@@ -196,9 +197,9 @@ const pb = new PocketBaseTS<Schema, 6>('')
 ```ts
 interface SchemaDeclaration {
 	[collectionName: string]: {
-		type: Record<string, any> // collection type
+		type: Record<PropertyKey, any> // collection type
 		relations?: {
-			[fieldName: string]: Record<string, any> // relation type
+			[fieldName: string]: Record<PropertyKey, any> // relation type
 		}
 	}
 }
