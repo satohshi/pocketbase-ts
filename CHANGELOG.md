@@ -1,5 +1,11 @@
 # pocketbase-ts
 
+## 1.2.3
+
+### Patch Changes
+
+-   b76bcfc: update peerDependencies to support v0.22
+
 ## 1.2.2
 
 ### Patch Changes
