@@ -1,5 +1,11 @@
 # pocketbase-ts
 
+## 1.2.4
+
+### Patch Changes
+
+-   d25cd39: add autocomplete for `bodyParams`
+
 ## 1.2.3
 
 ### Patch Changes
