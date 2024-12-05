@@ -11,6 +11,7 @@ import type { Options } from './options.js'
 import type { PBResponseType } from './response.js'
 import type { SchemaDeclaration } from './schema.js'
 import type { FilterHelper } from './filter.js'
+import type { BodyParams } from './body-params.js'
 
 export type { UniqueCollection } from './type-utils.js'
 
@@ -115,7 +116,7 @@ class RecordServiceTS<
 	// @ts-ignore
 	override async create<const TOptions extends _ViewOptions>(
 		bodyParams?:
-			| Partial<Omit<TSchema[TKey], 'created' | 'updated'>>
+			| Partial<Omit<TSchema[TKey]['type'], 'created' | 'updated'>>
 			| { [key: string]: any }
 			| FormData,
 		options?: TOptions
@@ -127,10 +128,7 @@ class RecordServiceTS<
 	// @ts-ignore
 	override async update<const TOptions extends _ViewOptions>(
 		id: string,
-		bodyParams?:
-			| Partial<Omit<TSchema[TKey], 'id' | 'created' | 'updated'>>
-			| { [key: string]: any }
-			| FormData,
+		bodyParams?: BodyParams<TSchema[TKey]['type']> | { [key: string]: any } | FormData,
 		options?: TOptions
 	): Promise<PBResponseType<TSchema, TKey, TOptions, TMaxDepth>> {
 		const processedOption = processOptions(options)
