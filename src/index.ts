@@ -89,7 +89,7 @@ class RecordServiceTS<
 		page = 1,
 		perPage = 30,
 		options?: TOptions
-	): Promise<ListResult<_Type> | ListResult<PBResponseType<TSchema, TKey, TOptions, TMaxDepth>>> {
+	): Promise<ListResult<_Type | PBResponseType<TSchema, TKey, TOptions, TMaxDepth>>> {
 		const processedOption = processOptions(options)
 		return super.getList(page, perPage, processedOption)
 	}
