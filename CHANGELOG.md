@@ -1,5 +1,11 @@
 # pocketbase-ts
 
+## 1.2.5
+
+### Patch Changes
+
+-   02a45ae: add overloads and remove @ts-ignore
+
 ## 1.2.4
 
 ### Patch Changes
