@@ -1,5 +1,11 @@
 # pocketbase-ts
 
+## 1.2.6
+
+### Patch Changes
+
+-   b39b26e: widen parameter types for filter helper (fixes #14)
+
 ## 1.2.5
 
 ### Patch Changes
