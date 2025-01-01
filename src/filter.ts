@@ -46,4 +46,6 @@ export type FilterHelper<
 	TMaxDepth extends number,
 	IncludeModifier extends boolean,
 	_Filterable extends string = FilterString<TSchema, TKey, TMaxDepth, IncludeModifier>,
-> = (arg: { $: (str: TemplateStringsArray, ...values: _Filterable[]) => string }) => string
+> = (arg: {
+	$: (str: TemplateStringsArray, ...values: (_Filterable | {} | null | undefined)[]) => string
+}) => string

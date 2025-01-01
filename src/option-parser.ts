@@ -3,10 +3,10 @@ type Options = {
 	expand?: Expand[]
 	filter?:
 		| string
-		| ((arg: { $: (str: TemplateStringsArray, ...values: string[]) => string }) => string)
+		| ((arg: { $: (str: TemplateStringsArray, ...values: any[]) => string }) => string)
 	sort?:
 		| string
-		| ((arg: { $: (str: TemplateStringsArray, ...values: string[]) => string }) => string)
+		| ((arg: { $: (str: TemplateStringsArray, ...values: any[]) => string }) => string)
 }
 interface Expand extends Omit<Options, 'filter'> {
 	key: string
