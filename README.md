@@ -302,3 +302,24 @@ type User = UniqueCollection<{ name: string } & PocketBaseCollection, 'users'>
 ```
 
 Without this, TypeScript will confuse back-relations pointing to `User` and `Tag` and suggest that `users` can be expanded with `posts_via_tags`, etc.
+
+### Batch requests
+
+The response of batch requests (introduced in the official SDK v0.22.0) is not typed.  
+There are many cases where it's impossible to know the shape of the request until runtime.
+
+For example:
+
+```ts
+const batch = pb.createBatch()
+
+for (const user of users) {
+	if (condition) {
+		batch.collection('users').update(user.id, ...)
+	} else {
+		batch.collection('users').delete(user.id)
+	}
+}
+
+const response = batch.send()
+```
