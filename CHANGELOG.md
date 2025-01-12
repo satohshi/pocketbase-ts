@@ -1,5 +1,15 @@
 # pocketbase-ts
 
+## 1.3.0
+
+### Minor Changes
+
+-   148ab83: update peerDependencies to >= 0.22.0
+
+### Patch Changes
+
+-   fc258be: add autocomplete for `batch.collection()`
+
 ## 1.2.6
 
 ### Patch Changes
