@@ -51,6 +51,9 @@ npm install pocketbase-ts
 pnpm add pocketbase-ts
 ```
 
+> [!NOTE]
+> This package doesn't strictly follow SemVer and treats 1.x.x like 0.x.x as the name `pocketbase-ts` apparently belonged to another package previously and npm didn't let me publish 0.x.x.
+
 ## Usage
 
 ### Defining schema
