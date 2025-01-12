@@ -1,4 +1,5 @@
 import PocketBase from 'pocketbase'
+import { BatchServiceTS } from './services/BatchService.js'
 import { RecordServiceTS } from './services/RecordService.js'
 import type { BaseAuthStore } from 'pocketbase'
 export type { UniqueCollection } from './helpers/type-utils.js'
@@ -25,5 +26,9 @@ export class PocketBaseTS<
 		}
 
 		return this.#recordServices[idOrName]
+	}
+
+	override createBatch(): BatchServiceTS<TSchema> {
+		return new BatchServiceTS<TSchema>(this)
 	}
 }
