@@ -1,4 +1,4 @@
-import type { SchemaDeclaration } from './schema.js'
+import type { SchemaDeclaration } from '../schema.js'
 import type { IsSameShape, MergeObjects, GetSingleType } from './type-utils.js'
 
 type GetCollectionName<TSchema extends SchemaDeclaration, TObj> = keyof {

@@ -1,6 +1,6 @@
 import type { FilterHelper } from './filter.js'
 import type { RelParser } from './relation.js'
-import type { SchemaDeclaration } from './schema.js'
+import type { SchemaDeclaration } from '../schema.js'
 
 type WithEllipsis = '' | `${',' | ', '}${boolean}`
 

@@ -1,6 +1,6 @@
 import type { RelParser } from './relation.js'
 import type { Expand, Options } from './options.js'
-import type { SchemaDeclaration } from './schema.js'
+import type { SchemaDeclaration } from '../schema.js'
 import type { FieldsArrayToUnion } from './type-utils.js'
 
 export type PBResponseType<

@@ -1,5 +1,5 @@
 import type { RelParser } from './relation.js'
-import type { SchemaDeclaration } from './schema.js'
+import type { SchemaDeclaration } from '../schema.js'
 
 type ArrayModifier = '' | ':length' | ':each'
 
