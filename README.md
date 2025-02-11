@@ -19,7 +19,10 @@ This wrapper allows you to write it like this instead:
 const postsWithAuthorAndComments = await pb.collection('posts').getFullList({
 	fields: ['id', 'title'],
 	expand: [
-		{ key: 'author', fields: ['id', 'name'] },
+		{
+			key: 'author',
+			fields: ['id', 'name'],
+		},
 		{
 			key: 'comments_via_post',
 			fields: ['id', 'message'],
@@ -61,7 +64,7 @@ pnpm add pocketbase-ts
 ### Defining schema
 
 > [!TIP]
-> I recommend using [this hook](https://github.com/satohshi/pocketbase-ts-schema-generator) to generate the schema during development.  
+> I recommend using [this hook](https://github.com/satohshi/pocketbase-ts-schema-generator) to generate the schema.  
 > It will watch for any changes made to the collections and update the schema file accordingly, keeping everything in sync.
 
 Below is an example of how you would define the schema for [this](https://pocketbase.io/docs/working-with-relations/) in the PocketBase docs.
@@ -97,7 +100,9 @@ interface Comment extends PocketBaseCollection {
 // you need to use "type" instead of "interface" here
 type Schema = {
 	// collection name as key
-	users: { type: User }
+	users: {
+		type: User
+	}
 	posts: {
 		type: Post
 		relations: {
@@ -107,7 +112,9 @@ type Schema = {
 			tags?: Array<Tag>
 		}
 	}
-	tags: { type: Tag }
+	tags: {
+		type: Tag
+	}
 	comments: {
 		type: Comment
 		relations: {
@@ -148,7 +155,12 @@ const result = await pb.collection('posts').getOne({
 			// you can use `:excerpt` modifier on string fields
 			fields: ['message:excerpt(20)'],
 			// nesting `expand` is supported
-			expand: [{ key: 'user', fields: ['name'] }],
+			expand: [
+				{
+					key: 'user',
+					fields: ['name'],
+				},
+			],
 		},
 	],
 })
@@ -310,7 +322,7 @@ Without this, TypeScript will confuse back-relations pointing to `User` and `Tag
 
 ### Batch requests
 
-The response of batch requests (introduced in the official SDK v0.22.0) is not typed.  
+The response of batch requests (introduced in the official SDK v0.22.0) is not typed, and likely never will be.  
 There are many cases where it's impossible to know the shape of the request until runtime.
 
 For example:
