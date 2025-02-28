@@ -6,8 +6,8 @@ This is how you would normally write options for the PocketBase SDK:
 
 ```js
 const postsWithAuthorAndComments = await pb.collection('posts').getFullList({
-	expand: 'author,comments_via_post'
-	fields: 'id,title,expand.author.id,expand.author.name,expand.comments_via_post.id,expand.comments_via_post.message',
+    expand: 'author,comments_via_post',
+    fields: 'id,title,expand.author.id,expand.author.name,expand.comments_via_post.id,expand.comments_via_post.message',
 })
 ```
 
@@ -17,28 +17,28 @@ This wrapper allows you to write it like this instead:
 
 ```js
 const postsWithAuthorAndComments = await pb.collection('posts').getFullList({
-	fields: ['id', 'title'],
-	expand: [
-		{
-			key: 'author',
-			fields: ['id', 'name'],
-		},
-		{
-			key: 'comments_via_post',
-			fields: ['id', 'message'],
-		},
-	],
+    fields: ['id', 'title'],
+    expand: [
+        {
+            key: 'author',
+            fields: ['id', 'name'],
+        },
+        {
+            key: 'comments_via_post',
+            fields: ['id', 'message'],
+        },
+    ],
 })
 ```
 
 It comes with autocomplete for `key`, `fields`, `expand`, `filter`, and `sort` options, and also properly **types the response** as:
 
 ```ts
-Pick<Post, 'id' | 'title'> & {
-	expand: {
-		author: Pick<User, 'id' | 'name'>
-		comments_via_post?: Pick<Comment, 'id' | 'message'>[]
-	}
+type PostsWithAuthorAndComments = Pick<Post, 'id' | 'title'> & {
+    expand: {
+        author: Pick<User, 'id' | 'name'>
+        comments_via_post?: Pick<Comment, 'id' | 'message'>[]
+    }
 }
 ```
 
@@ -71,57 +71,57 @@ Below is an example of how you would define the schema for [this](https://pocket
 
 ```ts
 interface PocketBaseCollection {
-	id: string
-	created: string
-	updated: string
+    id: string
+    created: string
+    updated: string
 }
 
 interface User extends PocketBaseCollection {
-	name: string
+    name: string
 }
 
 interface Post extends PocketBaseCollection {
-	// relation fields are defined as strings because they are IDs of the related items
-	author: string
-	title: string
-	tags: Array<string>
+    // relation fields are defined as strings because they are IDs of the related items
+    author: string
+    title: string
+    tags: Array<string>
 }
 
 interface Tag extends PocketBaseCollection {
-	name: string
+    name: string
 }
 
 interface Comment extends PocketBaseCollection {
-	post: string
-	user: string
-	message: string
+    post: string
+    user: string
+    message: string
 }
 
 // you need to use "type" instead of "interface" here
 type Schema = {
-	// collection name as key
-	users: {
-		type: User
-	}
-	posts: {
-		type: Post
-		relations: {
-			// field name as key
-			author: User
-			// add "?" modifier to annotate optional relation fields
-			tags?: Array<Tag>
-		}
-	}
-	tags: {
-		type: Tag
-	}
-	comments: {
-		type: Comment
-		relations: {
-			post: Post
-			user: User
-		}
-	}
+    // collection name as key
+    users: {
+        type: User
+    }
+    posts: {
+        type: Post
+        relations: {
+            // field name as key
+            author: User
+            // add "?" modifier to annotate optional relation fields
+            tags?: Array<Tag>
+        }
+    }
+    tags: {
+        type: Tag
+    }
+    comments: {
+        type: Comment
+        relations: {
+            post: Post
+            user: User
+        }
+    }
 }
 ```
 
@@ -143,41 +143,41 @@ Use it just like you would with the official SDK, but with a more readable optio
 
 ```ts
 const result = await pb.collection('posts').getOne({
-	// you can specify fields to be returned in the response
-	fields: ['id', 'title', 'tags'],
-	expand: [
-		{
-			// returns all fields if not specified
-			key: 'author',
-		},
-		{
-			key: 'comments_via_post',
-			// you can use `:excerpt` modifier on string fields
-			fields: ['message:excerpt(20)'],
-			// nesting `expand` is supported
-			expand: [
-				{
-					key: 'user',
-					fields: ['name'],
-				},
-			],
-		},
-	],
+    // you can specify fields to be returned in the response
+    fields: ['id', 'title', 'tags'],
+    expand: [
+        {
+            // returns all fields if not specified
+            key: 'author',
+        },
+        {
+            key: 'comments_via_post',
+            // you can use `:excerpt` modifier on string fields
+            fields: ['message:excerpt(20)'],
+            // nesting `expand` is supported
+            expand: [
+                {
+                    key: 'user',
+                    fields: ['name'],
+                },
+            ],
+        },
+    ],
 })
 ```
 
 The result is automatically typed as:
 
 ```ts
-Pick<Post, "tags" | "id" | "title"> & {
-	expand: {
-		author: User
-		comments_via_post?: (Pick<Comment, "message"> & {
-			expand: {
-				user: Pick<User, "name">
-			}
-		})[]
-	}
+type Result = Pick<Post, 'tags' | 'id' | 'title'> & {
+    expand: {
+        author: User
+        comments_via_post?: (Pick<Comment, 'message'> & {
+            expand: {
+                user: Pick<User, 'name'>
+            }
+        })[]
+    }
 }
 ```
 
@@ -187,9 +187,9 @@ While you can still write `filter` and `sort` as string, you can also use the pr
 
 ```ts
 const result = await pb.collection('posts').getFullList({
-	filter: ({ $ }) => $`${'author.role'} = "admin" && ${'comments_via_post.message'} ?~ 'hello'`,
-	sort: ({ $ }) => $`${'created'},${'author.name'}`,
-	expand: [{ key: 'comments_via_post' }],
+    filter: ({ $ }) => $`${'author.role'} = "admin" && ${'comments_via_post.message'} ?~ 'hello'`,
+    sort: ({ $ }) => $`${'created'},${'author.name'}`,
+    expand: [{ key: 'comments_via_post' }],
 })
 ```
 
@@ -213,12 +213,12 @@ const pb = new PocketBaseTS<Schema, 6>('')
 
 ```ts
 interface SchemaDeclaration {
-	[collectionName: string]: {
-		type: Record<PropertyKey, any> // collection type
-		relations?: {
-			[fieldName: string]: Record<PropertyKey, any> // relation type
-		}
-	}
+    [collectionName: string]: {
+        type: Record<PropertyKey, any> // collection type
+        relations?: {
+            [fieldName: string]: Record<PropertyKey, any> // relation type
+        }
+    }
 }
 ```
 
@@ -227,24 +227,26 @@ interface SchemaDeclaration {
 Let's say you want to fetch a post with its comments using `expand`.  
 When the post doesn't have any comments, the SDK (or PocketBase itself rather) returns something like this:
 
-```ts
+```json
 {
-	id: "1",
-	title: "Lorem ipsum",
-	tags: ["lorem", "ipsum"],
-	created: "2024-01-01T00:00:00.000Z",
-	updated: "2024-01-01T00:00:00.000Z"
+    "id": "1",
+    "title": "Lorem ipsum",
+    "tags": ["lorem", "ipsum"],
+    "created": "2024-01-01T00:00:00.000Z",
+    "updated": "2024-01-01T00:00:00.000Z"
 }
 ```
 
 The response will not have
 
-```ts
+```json
 {
-	expand: {
-		comments_via_post: []
-	}
+    "expand": {
+        "comments_via_post": []
+    }
 }
+
+
 // or not even { expand: undefined } for that matter
 ```
 
@@ -253,17 +255,17 @@ So you will get a runtime error if you try to access `post.expand.comments_via_p
 To handle cases like this, the wrapper will add the `?` modifier to `expand` itself if all the specified expands are for optional relation fields.
 
 ```ts
-Post & {
-	expand?: {
-		comments_via_post: Comment[]
-	}
+type Response = Post & {
+    expand?: {
+        comments_via_post: Comment[]
+    }
 }
 // or with multiple optional relations
-Post & {
-	expand?: {
-		tags?: Tag[]
-		comments_via_post?: Comment[]
-	}
+type Response = Post & {
+    expand?: {
+        tags?: Tag[]
+        comments_via_post?: Comment[]
+    }
 }
 ```
 
@@ -272,11 +274,11 @@ If you expand it along with fields that are not optional like `author`, `expand`
 So the response will be typed as:
 
 ```ts
-Post & {
-	expand: {
-		author: User
-		comments_via_post?: Comment[]
-	}
+type Response = Post & {
+    expand: {
+        author: User
+        comments_via_post?: Comment[]
+    }
 }
 ```
 
@@ -293,16 +295,16 @@ In such case, you can override the default behaviour by explicitly defining back
 
 ```diff
 type Schema = {
-	...
-	users: {
-		type: User
-		relations: {
-			...
--			userDetail_via_user?: UserDetail[] // default (implicit/inferred)
-+			userDetail_via_user: UserDetail // made non-nullable by removing the `?`
-		}
-	}
-	...
+    ...
+    users: {
+        type: User
+        relations: {
+            ...
+-            userDetail_via_user?: UserDetail[] // default (implicit/inferred)
++            userDetail_via_user: UserDetail // made non-nullable by removing the `?`
+        }
+    }
+    ...
 }
 ```
 
@@ -331,11 +333,11 @@ For example:
 const batch = pb.createBatch()
 
 for (const user of users) {
-	if (condition) {
-		batch.collection('users').update(user.id, ...)
-	} else {
-		batch.collection('users').delete(user.id)
-	}
+    if (condition) {
+        batch.collection('users').update(user.id, { name: '...' })
+    } else {
+        batch.collection('users').delete(user.id)
+    }
 }
 
 const response = batch.send()
