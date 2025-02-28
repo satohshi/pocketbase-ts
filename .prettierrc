@@ -4,5 +4,14 @@
 	"singleQuote": true,
 	"trailingComma": "es5",
 	"printWidth": 100,
-	"semi": false
+	"semi": false,
+	"overrides": [
+		{
+			"files": ["README.md"],
+			"options": {
+				"useTabs": false,
+				"tabWidth": 4
+			}
+		}
+	]
 }
