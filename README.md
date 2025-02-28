@@ -239,13 +239,12 @@ When the post doesn't have any comments, the SDK (or PocketBase itself rather) r
 
 The response will not have
 
-```json
+```jsonc
 {
     "expand": {
-        "comments_via_post": []
-    }
+        "comments_via_post": [],
+    },
 }
-
 
 // or not even { expand: undefined } for that matter
 ```
