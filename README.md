@@ -48,6 +48,9 @@ You can try it out in [TS Playground](https://www.typescriptlang.org/play/#code/
 
 ## Installation
 
+> [!IMPORTANT]
+> This package doesn't strictly follow SemVer and treats 1.x.x like 0.x.x as the name `pocketbase-ts` apparently belonged to another package previously and npm didn't let me publish 0.x.x.
+
 ```sh
 npm install pocketbase-ts
 ```
@@ -56,10 +59,9 @@ npm install pocketbase-ts
 pnpm add pocketbase-ts
 ```
 
-> [!NOTE]
-> This package doesn't strictly follow SemVer and treats 1.x.x like 0.x.x as the name `pocketbase-ts` apparently belonged to another package previously and npm didn't let me publish 0.x.x.
-
 ## Usage
+
+Except for the features described below (i.e. the query options), everything from the official SDK is left **as is**.
 
 ### Defining schema
 
@@ -125,9 +127,8 @@ type Schema = {
 }
 ```
 
-> [!NOTE]
-> Back-relations will automatically be inferred from the schema, so in most cases, you don't need to define them yourself.  
-> However, in some cases, you may need to define them explicitly. See [Caveats](#caveats) for more information.
+Back-relations will automatically be inferred from the schema, so in most cases, you don't need to define them yourself.  
+However, in some cases, you may need to define them explicitly. See [Caveats](#caveats) for more information.
 
 ### Instantiating the SDK
 
