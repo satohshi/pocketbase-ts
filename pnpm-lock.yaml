@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       pocketbase:
-        specifier: '>=0.22.0 <0.26.0'
+        specifier: '>=0.22.0 <0.27.0'
         version: 0.25.0
     devDependencies:
       '@changesets/cli':
