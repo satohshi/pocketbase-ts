@@ -1,5 +1,11 @@
 # pocketbase-ts
 
+## 1.3.1
+
+### Patch Changes
+
+- fe22ea8: add support for 0.26.x
+
 ## 1.3.0
 
 ### Minor Changes
