@@ -1,5 +1,11 @@
 # pocketbase-ts
 
+## 1.4.0
+
+### Minor Changes
+
+- 55fcb6b: omit `collectionName` and `collectionId` fields on write
+
 ## 1.3.1
 
 ### Patch Changes
