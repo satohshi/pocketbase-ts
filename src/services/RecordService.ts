@@ -106,15 +106,21 @@ export class RecordServiceTS<
 	}
 
 	override async create(
-		bodyParams?: Partial<Omit<_Type, 'created' | 'updated'>> | { [key: string]: any } | FormData
+		bodyParams?:
+			| Partial<Omit<_Type, 'created' | 'updated' | 'collectionId' | 'collectionName'>>
+			| { [key: string]: any }
+			| FormData
 	): Promise<_Type>
 	override async create<const TOptions extends _ViewOptions>(
-		bodyParams: Partial<Omit<_Type, 'created' | 'updated'>> | { [key: string]: any } | FormData,
+		bodyParams:
+			| Partial<Omit<_Type, 'created' | 'updated' | 'collectionId' | 'collectionName'>>
+			| { [key: string]: any }
+			| FormData,
 		options: TOptions
 	): Promise<PBResponseType<TSchema, TKey, TOptions, TMaxDepth>>
 	override async create<const TOptions extends _ViewOptions>(
 		bodyParams?:
-			| Partial<Omit<_Type, 'created' | 'updated'>>
+			| Partial<Omit<_Type, 'created' | 'updated' | 'collectionId' | 'collectionName'>>
 			| { [key: string]: any }
 			| FormData,
 		options?: TOptions
