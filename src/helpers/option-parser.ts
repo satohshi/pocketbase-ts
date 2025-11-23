@@ -1,4 +1,4 @@
-type Options = {
+export type Options = {
 	fields?: string[]
 	expand?: Expand[]
 	filter?:

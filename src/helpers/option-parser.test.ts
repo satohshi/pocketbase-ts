@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { processOptions } from './option-parser.js'
+import { Options, processOptions } from './option-parser.js'
 
 describe('processOptions', () => {
 	it('should return undefined if option is undefined', () => {
@@ -82,7 +82,7 @@ describe('processOptions', () => {
 	})
 
 	it('should process filter accordingly if it is a function', () => {
-		const option = {
+		const option: Options = {
 			filter: ({ $ }) => $`${'field1'} = "value1" && ${'field2'} = "value2"`,
 		}
 		const expected = {
@@ -102,7 +102,7 @@ describe('processOptions', () => {
 	})
 
 	it('should process sort accordingly if it is a function', () => {
-		const option = {
+		const option: Options = {
 			sort: ({ $ }) => $`${'field1'},${'field2'}`,
 		}
 		const expected = { sort: 'field1,field2' }
