@@ -57,21 +57,17 @@ describe('pocketbase-ts', () => {
 	})
 
 	it("shouldn't allow expand for other tables even though they are the same shape", () => {
-		pb.collection('tags')
-			.getFullList({
-				// @ts-expect-error
-				expand: [{ key: 'comments_via_user' }],
-			})
-			.catch(() => null!)
+		pb.collection('tags').getFullList({
+			// @ts-expect-error
+			expand: [{ key: 'comments_via_user' }],
+		})
 	})
 
 	it('should accept any type of value in filter helper', () => {
-		pb.collection('posts')
-			.getFullList({
-				filter: ({ $ }) =>
-					$`${'author.comments_via_user.id'} ${1} ${'foo'} ${true} ${null} ${undefined} ${{}} ${[]} ${() => {}} ${new Date()}`,
-			})
-			.catch(() => null!)
+		pb.collection('posts').getFullList({
+			filter: ({ $ }) =>
+				$`${'author.comments_via_user.id'} ${1} ${'foo'} ${true} ${null} ${undefined} ${{}} ${[]} ${() => {}} ${new Date()}`,
+		})
 	})
 
 	it('should only include specified fields', async () => {
