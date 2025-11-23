@@ -226,7 +226,7 @@ interface SchemaDeclaration {
 ## Handling of `expand`
 
 Let's say you want to fetch a post with its comments using `expand`.  
-When the post doesn't have any comments, the SDK (or PocketBase itself rather) returns something like this:
+When the post doesn't have any comments, PocketBase returns something like this:
 
 ```json
 {
