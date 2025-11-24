@@ -6,7 +6,7 @@ import type { FieldsArrayToUnion } from './type-utils.js'
 export type PBResponseType<
 	TSchema extends SchemaDeclaration,
 	TTableName extends keyof TSchema,
-	TOptions extends Options<TSchema, TTableName, TMaxDepth>,
+	TOptions extends Options<TSchema, TTableName, TMaxDepth, 'list'>,
 	TMaxDepth extends number,
 	_Obj = TSchema[TTableName]['type'],
 > = (FieldsArrayToUnion<TOptions['fields']> extends infer Fields extends keyof _Obj

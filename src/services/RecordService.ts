@@ -1,10 +1,19 @@
 import PocketBase, { RecordService } from 'pocketbase'
 import { processFilterAndSort, processOptions } from '../helpers/option-parser.js'
-import type { ListResult, RecordSubscription, UnsubscribeFunc } from 'pocketbase'
+import type {
+	ListResult,
+	RecordSubscription,
+	UnsubscribeFunc,
+	RecordSubscribeOptions,
+	RecordFullListOptions,
+	RecordListOptions,
+	RecordOptions,
+} from 'pocketbase'
 import type { Options } from '../helpers/options.js'
 import type { BodyParams } from '../helpers/body-params.js'
 import type { FilterHelper } from '../helpers/filter.js'
 import type { PocketBaseTS } from '../Client.js'
+import type { MergeObjects } from '../helpers/type-utils.js'
 import type { PBResponseType } from '../helpers/response.js'
 import type { SchemaDeclaration } from '../schema.js'
 
@@ -13,37 +22,49 @@ export class RecordServiceTS<
 	TKey extends keyof TSchema,
 	TMaxDepth extends number,
 	_Type = TSchema[TKey]['type'],
-	_ListOptions extends Options<TSchema, TKey, TMaxDepth, true> = Options<
+	_ListOptions extends Options<TSchema, TKey, TMaxDepth, 'list'> = Options<
 		TSchema,
 		TKey,
 		TMaxDepth,
-		true
+		'list'
 	>,
-	_ViewOptions extends Options<TSchema, TKey, TMaxDepth, false> = Options<
+	_ViewOptions extends Options<TSchema, TKey, TMaxDepth, 'view'> = Options<
 		TSchema,
 		TKey,
 		TMaxDepth,
-		false
+		'view'
+	>,
+	_SubscribeOptions extends Options<TSchema, TKey, TMaxDepth, 'subscribe'> = Options<
+		TSchema,
+		TKey,
+		TMaxDepth,
+		'subscribe'
 	>,
 > extends RecordService {
 	constructor(client: PocketBaseTS<any>, idOrName: TKey & string) {
 		super(client as unknown as PocketBase, idOrName)
 	}
 
-	override async subscribe<const TOption extends _ViewOptions>(
+	override async subscribe<
+		const TOption extends MergeObjects<RecordSubscribeOptions, _SubscribeOptions>,
+	>(
 		topic: string,
 		callback: (
 			data: RecordSubscription<PBResponseType<TSchema, TKey, TOption, TMaxDepth>>
 		) => void
 	): Promise<UnsubscribeFunc>
-	override async subscribe<const TOption extends _ViewOptions>(
+	override async subscribe<
+		const TOption extends MergeObjects<RecordSubscribeOptions, _SubscribeOptions>,
+	>(
 		topic: string,
 		callback: (
 			data: RecordSubscription<PBResponseType<TSchema, TKey, TOption, TMaxDepth>>
 		) => void,
 		options: TOption
 	): Promise<UnsubscribeFunc>
-	override async subscribe<const TOption extends _ViewOptions>(
+	override async subscribe<
+		const TOption extends MergeObjects<RecordSubscribeOptions, _SubscribeOptions>,
+	>(
 		topic: string,
 		callback: (
 			data: RecordSubscription<PBResponseType<TSchema, TKey, TOption, TMaxDepth>>
@@ -54,20 +75,20 @@ export class RecordServiceTS<
 		return super.subscribe(topic, callback, processedOption)
 	}
 
-	override async getFullList<const TOptions extends _ListOptions>(
-		options?: TOptions
-	): Promise<Array<PBResponseType<TSchema, TKey, TOptions, TMaxDepth>>> {
+	override async getFullList<
+		const TOptions extends MergeObjects<RecordFullListOptions, _ListOptions>,
+	>(options?: TOptions): Promise<Array<PBResponseType<TSchema, TKey, TOptions, TMaxDepth>>> {
 		const processedOption = processOptions(options)
 		return super.getFullList(processedOption)
 	}
 
 	override async getList(page: number, perPage: number): Promise<ListResult<_Type>>
-	override async getList<const TOptions extends _ListOptions>(
+	override async getList<const TOptions extends MergeObjects<RecordListOptions, _ListOptions>>(
 		page: number,
 		perPage: number,
 		options: TOptions
 	): Promise<ListResult<PBResponseType<TSchema, TKey, TOptions, TMaxDepth>>>
-	override async getList<const TOptions extends _ListOptions>(
+	override async getList<const TOptions extends MergeObjects<RecordListOptions, _ListOptions>>(
 		page = 1,
 		perPage = 30,
 		options?: TOptions
@@ -79,11 +100,15 @@ export class RecordServiceTS<
 	override async getFirstListItem(
 		filter: string | FilterHelper<TSchema, TKey, TMaxDepth, true>
 	): Promise<_Type>
-	override async getFirstListItem<const TOptions extends _ListOptions>(
+	override async getFirstListItem<
+		const TOptions extends MergeObjects<RecordListOptions, _ListOptions>,
+	>(
 		filter: string | FilterHelper<TSchema, TKey, TMaxDepth, true>,
 		options: TOptions
 	): Promise<PBResponseType<TSchema, TKey, TOptions, TMaxDepth>>
-	override async getFirstListItem<const TOptions extends _ListOptions>(
+	override async getFirstListItem<
+		const TOptions extends MergeObjects<RecordListOptions, _ListOptions>,
+	>(
 		filter: string | FilterHelper<TSchema, TKey, TMaxDepth, true>,
 		options?: TOptions
 	): Promise<_Type | PBResponseType<TSchema, TKey, TOptions, TMaxDepth>> {
@@ -93,11 +118,11 @@ export class RecordServiceTS<
 	}
 
 	override async getOne(id: string): Promise<_Type>
-	override async getOne<const TOptions extends _ViewOptions>(
+	override async getOne<const TOptions extends MergeObjects<RecordOptions, _ViewOptions>>(
 		id: string,
 		options: TOptions
 	): Promise<PBResponseType<TSchema, TKey, TOptions, TMaxDepth>>
-	override async getOne<const TOptions extends _ViewOptions>(
+	override async getOne<const TOptions extends MergeObjects<RecordOptions, _ViewOptions>>(
 		id: string,
 		options?: TOptions
 	): Promise<_Type | PBResponseType<TSchema, TKey, TOptions, TMaxDepth>> {
@@ -111,14 +136,14 @@ export class RecordServiceTS<
 			| { [key: string]: any }
 			| FormData
 	): Promise<_Type>
-	override async create<const TOptions extends _ViewOptions>(
+	override async create<const TOptions extends MergeObjects<RecordOptions, _ViewOptions>>(
 		bodyParams:
 			| Partial<Omit<_Type, 'created' | 'updated' | 'collectionId' | 'collectionName'>>
 			| { [key: string]: any }
 			| FormData,
 		options: TOptions
 	): Promise<PBResponseType<TSchema, TKey, TOptions, TMaxDepth>>
-	override async create<const TOptions extends _ViewOptions>(
+	override async create<const TOptions extends MergeObjects<RecordOptions, _ViewOptions>>(
 		bodyParams?:
 			| Partial<Omit<_Type, 'created' | 'updated' | 'collectionId' | 'collectionName'>>
 			| { [key: string]: any }
@@ -133,12 +158,12 @@ export class RecordServiceTS<
 		id: string,
 		bodyParams?: BodyParams<_Type> | { [key: string]: any } | FormData
 	): Promise<_Type>
-	override async update<const TOptions extends _ViewOptions>(
+	override async update<const TOptions extends MergeObjects<RecordOptions, _ViewOptions>>(
 		id: string,
 		bodyParams: BodyParams<_Type> | { [key: string]: any } | FormData,
 		options: TOptions
 	): Promise<PBResponseType<TSchema, TKey, TOptions, TMaxDepth>>
-	override async update<const TOptions extends _ViewOptions>(
+	override async update<const TOptions extends MergeObjects<RecordOptions, _ViewOptions>>(
 		id: string,
 		bodyParams?: BodyParams<_Type> | { [key: string]: any } | FormData,
 		options?: TOptions

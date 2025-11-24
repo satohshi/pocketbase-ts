@@ -10,7 +10,7 @@ export type Options<
 	TSchema extends SchemaDeclaration,
 	TKey extends keyof TSchema,
 	TMaxDepth extends number,
-	IsList extends boolean = true,
+	TMethod extends 'subscribe' | 'list' | 'view',
 > = {
 	[Key in TKey]: {
 		requestKey?: string | null
@@ -25,20 +25,22 @@ export type Options<
 		>
 		/** Array of relations to include in the response. */
 		expand?: Array<Expand<TSchema, Key>>
-	} & (IsList extends true
-		? {
-				sort?:
-					| '@random'
-					| `${'' | '-'}${keyof TSchema[Key]['type'] & string}`
-					| (string & {})
-					| FilterHelper<TSchema, Key, TMaxDepth, false>
+	} & {
+		subscribe: { filter?: string | FilterHelper<TSchema, Key, TMaxDepth, true> }
+		list: {
+			sort?:
+				| '@random'
+				| `${'' | '-'}${keyof TSchema[Key]['type'] & string}`
+				| (string & {})
+				| FilterHelper<TSchema, Key, TMaxDepth, false>
 
-				filter?: string | FilterHelper<TSchema, Key, TMaxDepth, true>
-				page?: number
-				perPage?: number
-				skipTotal?: boolean
-			}
-		: unknown)
+			filter?: string | FilterHelper<TSchema, Key, TMaxDepth, true>
+			page?: number
+			perPage?: number
+			skipTotal?: boolean
+		}
+		view: unknown
+	}[TMethod]
 }[TKey]
 
 export type Expand<

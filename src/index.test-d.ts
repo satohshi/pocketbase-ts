@@ -270,4 +270,37 @@ describe('pocketbase-ts', () => {
 			}
 		>()
 	})
+
+	it('should type .subscribe method', () => {
+		pb.collection('comments').subscribe(
+			'*',
+			(e) => {
+				expectTypeOf(e.record).toEqualTypeOf<
+					Pick<Comment, 'message'> & {
+						expand: { post: Post }
+					}
+				>()
+			},
+			{
+				fields: ['message'],
+				expand: [{ key: 'post' }],
+			}
+		)
+	})
+
+	it('should let you use filter helper function in subscribe', () => {
+		pb.collection('comments').subscribe('*', () => {}, {
+			filter: ({ $ }) => $`${'post.author'}`,
+		})
+	})
+
+	it('should let you pass options like "headers"', () => {
+		pb.collection('tags').subscribe('*', () => {}, { headers: { a: 'a' } })
+		pb.collection('tags').getFullList({ headers: { a: 'a' } })
+		pb.collection('tags').getList(1, 1, { headers: { a: 'a' } })
+		pb.collection('tags').getFirstListItem('', { headers: { a: 'a' } })
+		pb.collection('tags').getOne('', { headers: { a: 'a' } })
+		pb.collection('tags').create({}, { headers: { a: 'a' } })
+		pb.collection('tags').update('', {}, { headers: { a: 'a' } })
+	})
 })
