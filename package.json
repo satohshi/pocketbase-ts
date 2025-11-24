@@ -21,11 +21,11 @@
 		"dist"
 	],
 	"scripts": {
-		"dev": "vitest --typecheck",
+		"dev": "vitest",
 		"build": "tsc",
 		"lint": "tsc --noEmit && prettier --check .",
 		"format": "prettier --write .",
-		"test": "vitest run --typecheck",
+		"test": "vitest run",
 		"release": "changeset publish"
 	},
 	"type": "module",
