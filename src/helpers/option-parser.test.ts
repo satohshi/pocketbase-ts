@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
+import { processOptions } from './option-parser.js'
 
-import { Options, processOptions } from './option-parser.js'
+import type { Options } from './option-parser.js'
 
 describe('processOptions', () => {
 	it('should return undefined if option is undefined', () => {
