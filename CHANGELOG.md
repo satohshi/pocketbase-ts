@@ -1,5 +1,11 @@
 # pocketbase-ts
 
+## 1.4.1
+
+### Patch Changes
+
+- 9faa076: fix: allow all option keys available in the official sdk (fixes #22)
+
 ## 1.4.0
 
 ### Minor Changes
