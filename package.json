@@ -21,7 +21,7 @@
 		"dist"
 	],
 	"scripts": {
-		"dev": "vitest",
+		"dev": "vitest --ui",
 		"build": "tsc",
 		"lint": "tsc --noEmit && prettier --check .",
 		"format": "prettier --write .",
@@ -34,6 +34,7 @@
 	},
 	"devDependencies": {
 		"@changesets/cli": "^2.29.7",
+		"@vitest/ui": "^4.0.15",
 		"prettier": "^3.5.3",
 		"typescript": "^5.9.3",
 		"vitest": "^4.0.13"
