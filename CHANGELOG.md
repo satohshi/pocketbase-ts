@@ -1,5 +1,11 @@
 # pocketbase-ts
 
+## 1.5.0
+
+### Minor Changes
+
+- d402f5b: update handling of `expand` (closes #24)
+
 ## 1.4.1
 
 ### Patch Changes
