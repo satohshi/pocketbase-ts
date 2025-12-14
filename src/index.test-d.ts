@@ -4,8 +4,6 @@ import type { UniqueCollection } from './index.js'
 
 interface PocketBaseCollection {
 	id: string
-	created: string
-	updated: string
 }
 
 type User = UniqueCollection<{ name: string } & PocketBaseCollection, 'users'>
@@ -13,7 +11,7 @@ type User = UniqueCollection<{ name: string } & PocketBaseCollection, 'users'>
 interface Post extends PocketBaseCollection {
 	author: string
 	title: string
-	tags: Array<string>
+	tags: string[]
 }
 
 interface Tag extends PocketBaseCollection {
@@ -27,9 +25,6 @@ interface Comment extends PocketBaseCollection {
 }
 
 interface Base extends PocketBaseCollection {
-	stringField: string
-	numberField: number
-	booleanField: boolean
 	toOneRequired1: string
 	toOneRequired2: string
 	toOneOptional1?: string
@@ -101,16 +96,6 @@ type Schema = {
 	}
 	toOneOptional: {
 		type: ToOneOptional
-		relations: {
-			toOneRequired1: ToOneRequired
-			toOneRequired2: ToOneRequired
-			toOneOptional1?: ToOneOptional
-			toOneOptional2?: ToOneOptional
-			toManyRequired1: ToManyRequired[]
-			toManyRequired2: ToManyRequired[]
-			toManyOptional1?: ToManyOptional[]
-			toManyOptional2?: ToManyOptional[]
-		}
 	}
 	toManyRequired: {
 		type: ToManyRequired
@@ -127,22 +112,8 @@ type Schema = {
 	}
 	toManyOptional: {
 		type: ToManyOptional
-		relations: {
-			toOneRequired1: ToOneRequired
-			toOneRequired2: ToOneRequired
-			toOneOptional1?: ToOneOptional
-			toOneOptional2?: ToOneOptional
-			toManyRequired1: ToManyRequired[]
-			toManyRequired2: ToManyRequired[]
-			toManyOptional1?: ToManyOptional[]
-			toManyOptional2?: ToManyOptional[]
-		}
 	}
 }
-
-export type Prettify<T> = {
-	[K in keyof T]: Prettify<T[K]>
-} & {}
 
 describe('PocketBaseTS', () => {
 	const pb = new PocketBaseTS<Schema>()
@@ -273,8 +244,8 @@ describe('PocketBaseTS', () => {
 				const users = await pb
 					.collection('users')
 					.getFullList({ expand: [{ key: 'posts_via_author' }] })
-				expectTypeOf(users).toEqualTypeOf<
-					Array<User & { expand?: { posts_via_author: Post[] } }>
+				expectTypeOf(users).branded.toEqualTypeOf<
+					Array<User & { expand: { posts_via_author?: Post[] } }>
 				>()
 			})
 
@@ -300,7 +271,7 @@ describe('PocketBaseTS', () => {
 					.collection('users')
 					.getFullList({ expand: [{ key: 'userDetail_via_user' }] })
 
-				expectTypeOf(users).toEqualTypeOf<
+				expectTypeOf(users).branded.toEqualTypeOf<
 					Array<User & { expand: { userDetail_via_user: UserDetail } }>
 				>()
 			})
@@ -431,7 +402,7 @@ describe('PocketBaseTS', () => {
 						const posts = await pb.collection('posts').getFullList({
 							expand: [{ key: 'toOneRequired1' }],
 						})
-						expectTypeOf(posts).toEqualTypeOf<
+						expectTypeOf(posts).branded.toEqualTypeOf<
 							Array<Post & { expand: { toOneRequired1: ToOneRequired } }>
 						>()
 					})
@@ -440,8 +411,8 @@ describe('PocketBaseTS', () => {
 						const posts = await pb.collection('posts').getFullList({
 							expand: [{ key: 'toOneOptional1' }],
 						})
-						expectTypeOf(posts).toEqualTypeOf<
-							Array<Post & { expand?: { toOneOptional1: ToOneOptional } }>
+						expectTypeOf(posts).branded.toEqualTypeOf<
+							Array<Post & { expand: { toOneOptional1?: ToOneOptional } }>
 						>()
 					})
 
@@ -449,7 +420,7 @@ describe('PocketBaseTS', () => {
 						const posts = await pb.collection('posts').getFullList({
 							expand: [{ key: 'toManyRequired1' }],
 						})
-						expectTypeOf(posts).toEqualTypeOf<
+						expectTypeOf(posts).branded.toEqualTypeOf<
 							Array<Post & { expand: { toManyRequired1: ToManyRequired[] } }>
 						>()
 					})
@@ -458,8 +429,8 @@ describe('PocketBaseTS', () => {
 						const posts = await pb.collection('posts').getFullList({
 							expand: [{ key: 'toManyOptional1' }],
 						})
-						expectTypeOf(posts).toEqualTypeOf<
-							Array<Post & { expand?: { toManyOptional1: ToManyOptional[] } }>
+						expectTypeOf(posts).branded.toEqualTypeOf<
+							Array<Post & { expand: { toManyOptional1?: ToManyOptional[] } }>
 						>()
 					})
 
@@ -467,7 +438,7 @@ describe('PocketBaseTS', () => {
 						const posts = await pb.collection('posts').getFullList({
 							expand: [{ key: 'author' }, { key: 'toOneRequired1' }],
 						})
-						expectTypeOf(posts).toEqualTypeOf<
+						expectTypeOf(posts).branded.toEqualTypeOf<
 							Array<
 								Post & {
 									expand: {
@@ -500,10 +471,10 @@ describe('PocketBaseTS', () => {
 						const posts = await pb.collection('posts').getFullList({
 							expand: [{ key: 'toOneOptional1' }, { key: 'toOneOptional2' }],
 						})
-						expectTypeOf(posts).toEqualTypeOf<
+						expectTypeOf(posts).branded.toEqualTypeOf<
 							Array<
 								Post & {
-									expand?: {
+									expand: {
 										toOneOptional1?: ToOneOptional
 										toOneOptional2?: ToOneOptional
 									}
@@ -516,7 +487,7 @@ describe('PocketBaseTS', () => {
 						const posts = await pb.collection('posts').getFullList({
 							expand: [{ key: 'toManyRequired1' }, { key: 'toManyRequired2' }],
 						})
-						expectTypeOf(posts).toEqualTypeOf<
+						expectTypeOf(posts).branded.toEqualTypeOf<
 							Array<
 								Post & {
 									expand: {
@@ -549,10 +520,10 @@ describe('PocketBaseTS', () => {
 						const posts = await pb.collection('posts').getFullList({
 							expand: [{ key: 'toManyOptional1' }, { key: 'toManyOptional2' }],
 						})
-						expectTypeOf(posts).toEqualTypeOf<
+						expectTypeOf(posts).branded.toEqualTypeOf<
 							Array<
 								Post & {
-									expand?: {
+									expand: {
 										toManyOptional1?: ToManyOptional[]
 										toManyOptional2?: ToManyOptional[]
 									}
@@ -565,7 +536,7 @@ describe('PocketBaseTS', () => {
 						const posts = await pb.collection('posts').getFullList({
 							expand: [{ key: 'toOneRequired1' }, { key: 'toManyRequired1' }],
 						})
-						expectTypeOf(posts).toEqualTypeOf<
+						expectTypeOf(posts).branded.toEqualTypeOf<
 							Array<
 								Post & {
 									expand: {
@@ -615,10 +586,10 @@ describe('PocketBaseTS', () => {
 						const posts = await pb.collection('posts').getFullList({
 							expand: [{ key: 'toOneOptional1' }, { key: 'toManyOptional1' }],
 						})
-						expectTypeOf(posts).toEqualTypeOf<
+						expectTypeOf(posts).branded.toEqualTypeOf<
 							Array<
 								Post & {
-									expand?: {
+									expand: {
 										toOneOptional1?: ToOneOptional
 										toManyOptional1?: ToManyOptional[]
 									}
@@ -634,7 +605,7 @@ describe('PocketBaseTS', () => {
 					const posts = await pb
 						.collection('posts')
 						.getFullList({ expand: [{ key: 'toOneRequired1' }] })
-					expectTypeOf(posts).toEqualTypeOf<
+					expectTypeOf(posts).branded.toEqualTypeOf<
 						Array<Post & { expand: { toOneRequired1: ToOneRequired } }>
 					>()
 				})
@@ -643,8 +614,8 @@ describe('PocketBaseTS', () => {
 					const posts = await pb
 						.collection('posts')
 						.getFullList({ expand: [{ key: 'toOneOptional1' }] })
-					expectTypeOf(posts).toEqualTypeOf<
-						Array<Post & { expand?: { toOneOptional1: ToOneOptional } }>
+					expectTypeOf(posts).branded.toEqualTypeOf<
+						Array<Post & { expand: { toOneOptional1?: ToOneOptional } }>
 					>()
 				})
 
@@ -653,7 +624,7 @@ describe('PocketBaseTS', () => {
 						const postsWithAuthor = await pb
 							.collection('posts')
 							.getFullList({ expand: [{ key: 'author', fields: ['id', 'name'] }] })
-						expectTypeOf(postsWithAuthor).toEqualTypeOf<
+						expectTypeOf(postsWithAuthor).branded.toEqualTypeOf<
 							Array<Post & { expand: { author: Pick<User, 'id' | 'name'> } }>
 						>()
 					})
@@ -702,7 +673,7 @@ describe('PocketBaseTS', () => {
 						const comments = await pb.collection('comments').getFullList({
 							expand: [{ key: 'post', expand: [{ key: 'toOneRequired1' }] }],
 						})
-						expectTypeOf(comments).toEqualTypeOf<
+						expectTypeOf(comments).branded.toEqualTypeOf<
 							Array<
 								Comment & {
 									expand: {
@@ -717,11 +688,11 @@ describe('PocketBaseTS', () => {
 						const comments = await pb.collection('comments').getFullList({
 							expand: [{ key: 'post', expand: [{ key: 'toOneOptional1' }] }],
 						})
-						expectTypeOf(comments).toEqualTypeOf<
+						expectTypeOf(comments).branded.toEqualTypeOf<
 							Array<
 								Comment & {
 									expand: {
-										post: Post & { expand?: { toOneOptional1: ToOneOptional } }
+										post: Post & { expand: { toOneOptional1?: ToOneOptional } }
 									}
 								}
 							>
@@ -732,7 +703,7 @@ describe('PocketBaseTS', () => {
 						const comments = await pb.collection('comments').getFullList({
 							expand: [{ key: 'post', expand: [{ key: 'toManyRequired1' }] }],
 						})
-						expectTypeOf(comments).toEqualTypeOf<
+						expectTypeOf(comments).branded.toEqualTypeOf<
 							Array<
 								Comment & {
 									expand: {
@@ -749,12 +720,12 @@ describe('PocketBaseTS', () => {
 						const comments = await pb.collection('comments').getFullList({
 							expand: [{ key: 'post', expand: [{ key: 'toManyOptional1' }] }],
 						})
-						expectTypeOf(comments).toEqualTypeOf<
+						expectTypeOf(comments).branded.toEqualTypeOf<
 							Array<
 								Comment & {
 									expand: {
 										post: Post & {
-											expand?: { toManyOptional1: ToManyOptional[] }
+											expand: { toManyOptional1?: ToManyOptional[] }
 										}
 									}
 								}
@@ -771,7 +742,7 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(comments).toEqualTypeOf<
+						expectTypeOf(comments).branded.toEqualTypeOf<
 							Array<
 								Comment & {
 									expand: {
@@ -796,7 +767,7 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(comments).toEqualTypeOf<
+						expectTypeOf(comments).branded.toEqualTypeOf<
 							Array<
 								Comment & {
 									expand: {
@@ -822,12 +793,12 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(comments).toEqualTypeOf<
+						expectTypeOf(comments).branded.toEqualTypeOf<
 							Array<
 								Comment & {
 									expand: {
 										post: Post & {
-											expand?: {
+											expand: {
 												toOneOptional1?: ToOneOptional
 												toOneOptional2?: ToOneOptional
 											}
@@ -850,7 +821,7 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(comments).toEqualTypeOf<
+						expectTypeOf(comments).branded.toEqualTypeOf<
 							Array<
 								Comment & {
 									expand: {
@@ -878,7 +849,7 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(comments).toEqualTypeOf<
+						expectTypeOf(comments).branded.toEqualTypeOf<
 							Array<
 								Comment & {
 									expand: {
@@ -907,12 +878,12 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(comments).toEqualTypeOf<
+						expectTypeOf(comments).branded.toEqualTypeOf<
 							Array<
 								Comment & {
 									expand: {
 										post: Post & {
-											expand?: {
+											expand: {
 												toManyOptional2?: ToManyOptional[]
 												toManyOptional1?: ToManyOptional[]
 											}
@@ -932,7 +903,7 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(comments).toEqualTypeOf<
+						expectTypeOf(comments).branded.toEqualTypeOf<
 							Array<
 								Comment & {
 									expand: {
@@ -958,7 +929,7 @@ describe('PocketBaseTS', () => {
 							],
 						})
 
-						expectTypeOf(comments).toEqualTypeOf<
+						expectTypeOf(comments).branded.toEqualTypeOf<
 							Array<
 								Comment & {
 									expand: {
@@ -984,7 +955,7 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(comments).toEqualTypeOf<
+						expectTypeOf(comments).branded.toEqualTypeOf<
 							Array<
 								Comment & {
 									expand: {
@@ -1010,12 +981,12 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(comments).toEqualTypeOf<
+						expectTypeOf(comments).branded.toEqualTypeOf<
 							Array<
 								Comment & {
 									expand: {
 										post: Post & {
-											expand?: {
+											expand: {
 												toOneOptional1?: ToOneOptional
 												toManyOptional1?: ToManyOptional[]
 											}
@@ -1033,7 +1004,7 @@ describe('PocketBaseTS', () => {
 					const bases = await pb
 						.collection('base')
 						.getFullList({ expand: [{ key: 'toManyRequired1' }] })
-					expectTypeOf(bases).toEqualTypeOf<
+					expectTypeOf(bases).branded.toEqualTypeOf<
 						Array<Base & { expand: { toManyRequired1: ToManyRequired[] } }>
 					>()
 				})
@@ -1042,8 +1013,8 @@ describe('PocketBaseTS', () => {
 					const bases = await pb
 						.collection('base')
 						.getFullList({ expand: [{ key: 'toManyOptional1' }] })
-					expectTypeOf(bases).toEqualTypeOf<
-						Array<Base & { expand?: { toManyOptional1: ToManyOptional[] } }>
+					expectTypeOf(bases).branded.toEqualTypeOf<
+						Array<Base & { expand: { toManyOptional1?: ToManyOptional[] } }>
 					>()
 				})
 
@@ -1052,8 +1023,8 @@ describe('PocketBaseTS', () => {
 						const posts = await pb
 							.collection('posts')
 							.getFullList({ expand: [{ key: 'tags', fields: ['id', 'name'] }] })
-						expectTypeOf(posts).toEqualTypeOf<
-							Array<Post & { expand?: { tags: Pick<Tag, 'id' | 'name'>[] } }>
+						expectTypeOf(posts).branded.toEqualTypeOf<
+							Array<Post & { expand: { tags?: Pick<Tag, 'id' | 'name'>[] } }>
 						>()
 					})
 
@@ -1108,7 +1079,7 @@ describe('PocketBaseTS', () => {
 								{ key: 'toManyRequired1', expand: [{ key: 'toOneRequired1' }] },
 							],
 						})
-						expectTypeOf(bases).toEqualTypeOf<
+						expectTypeOf(bases).branded.toEqualTypeOf<
 							Array<
 								Base & {
 									expand: {
@@ -1127,12 +1098,12 @@ describe('PocketBaseTS', () => {
 								{ key: 'toManyRequired1', expand: [{ key: 'toOneOptional1' }] },
 							],
 						})
-						expectTypeOf(bases).toEqualTypeOf<
+						expectTypeOf(bases).branded.toEqualTypeOf<
 							Array<
 								Base & {
 									expand: {
 										toManyRequired1: (ToManyRequired & {
-											expand?: { toOneOptional1: ToOneOptional }
+											expand: { toOneOptional1?: ToOneOptional }
 										})[]
 									}
 								}
@@ -1146,7 +1117,7 @@ describe('PocketBaseTS', () => {
 								{ key: 'toManyRequired1', expand: [{ key: 'toManyRequired2' }] },
 							],
 						})
-						expectTypeOf(bases).toEqualTypeOf<
+						expectTypeOf(bases).branded.toEqualTypeOf<
 							Array<
 								Base & {
 									expand: {
@@ -1165,12 +1136,12 @@ describe('PocketBaseTS', () => {
 								{ key: 'toManyRequired1', expand: [{ key: 'toManyOptional1' }] },
 							],
 						})
-						expectTypeOf(bases).toEqualTypeOf<
+						expectTypeOf(bases).branded.toEqualTypeOf<
 							Array<
 								Base & {
 									expand: {
 										toManyRequired1: (ToManyRequired & {
-											expand?: { toManyOptional1: ToManyOptional[] }
+											expand: { toManyOptional1?: ToManyOptional[] }
 										})[]
 									}
 								}
@@ -1187,7 +1158,7 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(bases).toEqualTypeOf<
+						expectTypeOf(bases).branded.toEqualTypeOf<
 							Array<
 								Base & {
 									expand: {
@@ -1212,7 +1183,7 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(bases).toEqualTypeOf<
+						expectTypeOf(bases).branded.toEqualTypeOf<
 							Array<
 								Base & {
 									expand: {
@@ -1238,12 +1209,12 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(bases).toEqualTypeOf<
+						expectTypeOf(bases).branded.toEqualTypeOf<
 							Array<
 								Base & {
 									expand: {
 										toManyRequired1: (ToManyRequired & {
-											expand?: {
+											expand: {
 												toOneOptional1?: ToOneOptional
 												toOneOptional2?: ToOneOptional
 											}
@@ -1266,7 +1237,7 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(bases).toEqualTypeOf<
+						expectTypeOf(bases).branded.toEqualTypeOf<
 							Array<
 								Base & {
 									expand: {
@@ -1294,7 +1265,7 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(bases).toEqualTypeOf<
+						expectTypeOf(bases).branded.toEqualTypeOf<
 							Array<
 								Base & {
 									expand: {
@@ -1323,12 +1294,12 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(bases).toEqualTypeOf<
+						expectTypeOf(bases).branded.toEqualTypeOf<
 							Array<
 								Base & {
 									expand: {
 										toManyRequired1: (ToManyRequired & {
-											expand?: {
+											expand: {
 												toManyOptional1?: ToManyOptional[]
 												toManyOptional2?: ToManyOptional[]
 											}
@@ -1348,7 +1319,7 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(bases).toEqualTypeOf<
+						expectTypeOf(bases).branded.toEqualTypeOf<
 							Array<
 								Base & {
 									expand: {
@@ -1373,7 +1344,7 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(bases).toEqualTypeOf<
+						expectTypeOf(bases).branded.toEqualTypeOf<
 							Array<
 								Base & {
 									expand: {
@@ -1399,7 +1370,7 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(bases).toEqualTypeOf<
+						expectTypeOf(bases).branded.toEqualTypeOf<
 							Array<
 								Base & {
 									expand: {
@@ -1425,12 +1396,12 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(bases).toEqualTypeOf<
+						expectTypeOf(bases).branded.toEqualTypeOf<
 							Array<
 								Base & {
 									expand: {
 										toManyRequired1: (ToManyRequired & {
-											expand?: {
+											expand: {
 												toOneOptional1?: ToOneOptional
 												toManyOptional1?: ToManyOptional[]
 											}
@@ -1453,8 +1424,8 @@ describe('PocketBaseTS', () => {
 				const users = await pb
 					.collection('users')
 					.getList(1, 10, { expand: [{ key: 'posts_via_author' }] })
-				expectTypeOf(users.items).toEqualTypeOf<
-					Array<User & { expand?: { posts_via_author: Post[] } }>
+				expectTypeOf(users.items).branded.toEqualTypeOf<
+					Array<User & { expand: { posts_via_author?: Post[] } }>
 				>()
 			})
 
@@ -1480,7 +1451,7 @@ describe('PocketBaseTS', () => {
 					.collection('users')
 					.getList(1, 10, { expand: [{ key: 'userDetail_via_user' }] })
 
-				expectTypeOf(users.items).toEqualTypeOf<
+				expectTypeOf(users.items).branded.toEqualTypeOf<
 					Array<User & { expand: { userDetail_via_user: UserDetail } }>
 				>()
 			})
@@ -1615,7 +1586,7 @@ describe('PocketBaseTS', () => {
 						const posts = await pb.collection('posts').getList(1, 10, {
 							expand: [{ key: 'toOneRequired1' }],
 						})
-						expectTypeOf(posts.items).toEqualTypeOf<
+						expectTypeOf(posts.items).branded.toEqualTypeOf<
 							Array<Post & { expand: { toOneRequired1: ToOneRequired } }>
 						>()
 					})
@@ -1624,8 +1595,8 @@ describe('PocketBaseTS', () => {
 						const posts = await pb.collection('posts').getList(1, 10, {
 							expand: [{ key: 'toOneOptional1' }],
 						})
-						expectTypeOf(posts.items).toEqualTypeOf<
-							Array<Post & { expand?: { toOneOptional1: ToOneOptional } }>
+						expectTypeOf(posts.items).branded.toEqualTypeOf<
+							Array<Post & { expand: { toOneOptional1?: ToOneOptional } }>
 						>()
 					})
 
@@ -1633,7 +1604,7 @@ describe('PocketBaseTS', () => {
 						const posts = await pb.collection('posts').getList(1, 10, {
 							expand: [{ key: 'toManyRequired1' }],
 						})
-						expectTypeOf(posts.items).toEqualTypeOf<
+						expectTypeOf(posts.items).branded.toEqualTypeOf<
 							Array<Post & { expand: { toManyRequired1: ToManyRequired[] } }>
 						>()
 					})
@@ -1642,9 +1613,224 @@ describe('PocketBaseTS', () => {
 						const posts = await pb.collection('posts').getList(1, 10, {
 							expand: [{ key: 'toManyOptional1' }],
 						})
-						expectTypeOf(posts.items).toEqualTypeOf<
-							Array<Post & { expand?: { toManyOptional1: ToManyOptional[] } }>
+						expectTypeOf(posts.items).branded.toEqualTypeOf<
+							Array<Post & { expand: { toManyOptional1?: ToManyOptional[] } }>
 						>()
+					})
+				})
+
+				describe('in `expand` (to-one)', () => {
+					it('returns type as is if `fields` is not specified (required)', async () => {
+						const posts = await pb
+							.collection('posts')
+							.getList(1, 10, { expand: [{ key: 'toOneRequired1' }] })
+						expectTypeOf(posts.items).branded.toEqualTypeOf<
+							Array<Post & { expand: { toOneRequired1: ToOneRequired } }>
+						>()
+					})
+
+					it('returns type as is if `fields` is not specified (optional)', async () => {
+						const posts = await pb
+							.collection('posts')
+							.getList(1, 10, { expand: [{ key: 'toOneOptional1' }] })
+						expectTypeOf(posts.items).branded.toEqualTypeOf<
+							Array<Post & { expand: { toOneOptional1?: ToOneOptional } }>
+						>()
+					})
+
+					describe('fields', () => {
+						it('returns type with only specified fields', async () => {
+							const postsWithAuthor = await pb.collection('posts').getList(1, 10, {
+								expand: [{ key: 'author', fields: ['id', 'name'] }],
+							})
+							expectTypeOf(postsWithAuthor.items).branded.toEqualTypeOf<
+								Array<Post & { expand: { author: Pick<User, 'id' | 'name'> } }>
+							>()
+						})
+
+						it('only accepts fields that actually exist', () => {
+							pb.collection('posts').getList(1, 10, {
+								expand: [{ key: 'author', fields: ['id', 'name'] }],
+							})
+							pb.collection('posts').getList(1, 10, {
+								// @ts-expect-error
+								expand: [{ key: 'author', fields: ['foo'] }],
+							})
+							pb.collection('posts').getList(1, 10, {
+								// @ts-expect-error
+								expand: [{ key: 'author', fields: ['foo:excerpt(10)'] }],
+							})
+						})
+
+						it('lets you use modifiers like :excerpt', () => {
+							pb.collection('comments').getList(1, 10, {
+								expand: [{ key: 'post', fields: ['id', 'title:excerpt(10)'] }],
+							})
+						})
+
+						it("modifiers don't affect types", async () => {
+							const withoutModifier = await pb.collection('comments').getList(1, 10, {
+								expand: [{ key: 'post', fields: ['id', 'title'] }],
+							})
+							const withModifier = await pb.collection('comments').getList(1, 10, {
+								expand: [{ key: 'post', fields: ['id', 'title:excerpt(10)'] }],
+							})
+
+							expectTypeOf(withModifier.items).toEqualTypeOf<
+								Awaited<typeof withoutModifier>['items']
+							>()
+						})
+					})
+
+					describe('expand', () => {
+						it("can't be expanded with unrelated relations", () => {
+							pb.collection('posts').getList(1, 10, {
+								// @ts-expect-error
+								expand: [{ key: 'author', expand: [{ key: 'tags' }] }],
+							})
+						})
+
+						it('types single required to-one expand', async () => {
+							const comments = await pb.collection('comments').getList(1, 10, {
+								expand: [{ key: 'post', expand: [{ key: 'toOneRequired1' }] }],
+							})
+							expectTypeOf(comments.items).branded.toEqualTypeOf<
+								Array<
+									Comment & {
+										expand: {
+											post: Post & {
+												expand: { toOneRequired1: ToOneRequired }
+											}
+										}
+									}
+								>
+							>()
+						})
+
+						it('types single optional to-one expand', async () => {
+							const comments = await pb.collection('comments').getList(1, 10, {
+								expand: [{ key: 'post', expand: [{ key: 'toOneOptional1' }] }],
+							})
+							expectTypeOf(comments.items).branded.toEqualTypeOf<
+								Array<
+									Comment & {
+										expand: {
+											post: Post & {
+												expand: { toOneOptional1?: ToOneOptional }
+											}
+										}
+									}
+								>
+							>()
+						})
+
+						it('types single required to-many expand', async () => {
+							const comments = await pb.collection('comments').getList(1, 10, {
+								expand: [{ key: 'post', expand: [{ key: 'toManyRequired1' }] }],
+							})
+							expectTypeOf(comments.items).branded.toEqualTypeOf<
+								Array<
+									Comment & {
+										expand: {
+											post: Post & {
+												expand: { toManyRequired1: ToManyRequired[] }
+											}
+										}
+									}
+								>
+							>()
+						})
+
+						it('types single optional to-many expand', async () => {
+							const comments = await pb.collection('comments').getList(1, 10, {
+								expand: [{ key: 'post', expand: [{ key: 'toManyOptional1' }] }],
+							})
+							expectTypeOf(comments.items).branded.toEqualTypeOf<
+								Array<
+									Comment & {
+										expand: {
+											post: Post & {
+												expand: { toManyOptional1?: ToManyOptional[] }
+											}
+										}
+									}
+								>
+							>()
+						})
+					})
+				})
+
+				describe('in `expand` (to-many)', () => {
+					it('returns type as is if `fields` is not specified (required)', async () => {
+						const bases = await pb
+							.collection('base')
+							.getList(1, 10, { expand: [{ key: 'toManyRequired1' }] })
+						expectTypeOf(bases.items).branded.toEqualTypeOf<
+							Array<Base & { expand: { toManyRequired1: ToManyRequired[] } }>
+						>()
+					})
+
+					it('returns type as is if `fields` is not specified (optional)', async () => {
+						const bases = await pb
+							.collection('base')
+							.getList(1, 10, { expand: [{ key: 'toManyOptional1' }] })
+						expectTypeOf(bases.items).branded.toEqualTypeOf<
+							Array<Base & { expand: { toManyOptional1?: ToManyOptional[] } }>
+						>()
+					})
+
+					describe('fields', () => {
+						it('returns type with only specified fields', async () => {
+							const posts = await pb.collection('posts').getList(1, 10, {
+								expand: [{ key: 'tags', fields: ['id', 'name'] }],
+							})
+							expectTypeOf(posts.items).branded.toEqualTypeOf<
+								Array<Post & { expand: { tags?: Pick<Tag, 'id' | 'name'>[] } }>
+							>()
+						})
+
+						it('only accepts fields that actually exist', () => {
+							pb.collection('posts').getList(1, 10, {
+								expand: [{ key: 'tags', fields: ['id', 'name'] }],
+							})
+							pb.collection('posts').getList(1, 10, {
+								// @ts-expect-error
+								expand: [{ key: 'tags', fields: ['foo'] }],
+							})
+							pb.collection('posts').getList(1, 10, {
+								// @ts-expect-error
+								expand: [{ key: 'tags', fields: ['foo:excerpt(10)'] }],
+							})
+						})
+
+						it('lets you use modifiers like :excerpt', () => {
+							pb.collection('users').getList(1, 10, {
+								expand: [
+									{
+										key: 'posts_via_author',
+										fields: ['id', 'title:excerpt(10)'],
+									},
+								],
+							})
+						})
+
+						it("modifiers don't affect types", async () => {
+							const withoutModifier = await pb.collection('users').getList(1, 10, {
+								expand: [{ key: 'posts_via_author', fields: ['id', 'title'] }],
+							})
+							const withModifier = await pb.collection('users').getList(1, 10, {
+								expand: [
+									{
+										key: 'posts_via_author',
+										fields: ['id', 'title:excerpt(10)'],
+									},
+								],
+							})
+
+							expectTypeOf(withModifier.items).toEqualTypeOf<
+								Awaited<typeof withoutModifier>['items']
+							>()
+						})
 					})
 				})
 			})
@@ -1659,7 +1845,9 @@ describe('PocketBaseTS', () => {
 				const user = await pb
 					.collection('users')
 					.getFirstListItem('', { expand: [{ key: 'posts_via_author' }] })
-				expectTypeOf(user).toEqualTypeOf<User & { expand?: { posts_via_author: Post[] } }>()
+				expectTypeOf(user).branded.toEqualTypeOf<
+					User & { expand: { posts_via_author?: Post[] } }
+				>()
 			})
 
 			it('lets you override back relations', async () => {
@@ -1684,7 +1872,7 @@ describe('PocketBaseTS', () => {
 					.collection('users')
 					.getFirstListItem('', { expand: [{ key: 'userDetail_via_user' }] })
 
-				expectTypeOf(user).toEqualTypeOf<
+				expectTypeOf(user).branded.toEqualTypeOf<
 					User & { expand: { userDetail_via_user: UserDetail } }
 				>()
 			})
@@ -1779,7 +1967,7 @@ describe('PocketBaseTS', () => {
 						const post = await pb.collection('posts').getFirstListItem('', {
 							expand: [{ key: 'toOneRequired1' }],
 						})
-						expectTypeOf(post).toEqualTypeOf<
+						expectTypeOf(post).branded.toEqualTypeOf<
 							Post & { expand: { toOneRequired1: ToOneRequired } }
 						>()
 					})
@@ -1788,8 +1976,8 @@ describe('PocketBaseTS', () => {
 						const post = await pb.collection('posts').getFirstListItem('', {
 							expand: [{ key: 'toOneOptional1' }],
 						})
-						expectTypeOf(post).toEqualTypeOf<
-							Post & { expand?: { toOneOptional1: ToOneOptional } }
+						expectTypeOf(post).branded.toEqualTypeOf<
+							Post & { expand: { toOneOptional1?: ToOneOptional } }
 						>()
 					})
 
@@ -1797,7 +1985,7 @@ describe('PocketBaseTS', () => {
 						const post = await pb.collection('posts').getFirstListItem('', {
 							expand: [{ key: 'toManyRequired1' }],
 						})
-						expectTypeOf(post).toEqualTypeOf<
+						expectTypeOf(post).branded.toEqualTypeOf<
 							Post & { expand: { toManyRequired1: ToManyRequired[] } }
 						>()
 					})
@@ -1806,9 +1994,225 @@ describe('PocketBaseTS', () => {
 						const post = await pb.collection('posts').getFirstListItem('', {
 							expand: [{ key: 'toManyOptional1' }],
 						})
-						expectTypeOf(post).toEqualTypeOf<
-							Post & { expand?: { toManyOptional1: ToManyOptional[] } }
+						expectTypeOf(post).branded.toEqualTypeOf<
+							Post & { expand: { toManyOptional1?: ToManyOptional[] } }
 						>()
+					})
+				})
+
+				describe('in `expand` (to-one)', () => {
+					it('returns type as is if `fields` is not specified (required)', async () => {
+						const posts = await pb
+							.collection('posts')
+							.getFirstListItem('', { expand: [{ key: 'toOneRequired1' }] })
+						expectTypeOf(posts).branded.toEqualTypeOf<
+							Post & { expand: { toOneRequired1: ToOneRequired } }
+						>()
+					})
+
+					it('returns type as is if `fields` is not specified (optional)', async () => {
+						const posts = await pb
+							.collection('posts')
+							.getFirstListItem('', { expand: [{ key: 'toOneOptional1' }] })
+						expectTypeOf(posts).branded.toEqualTypeOf<
+							Post & { expand: { toOneOptional1?: ToOneOptional } }
+						>()
+					})
+
+					describe('fields', () => {
+						it('returns type with only specified fields', async () => {
+							const postsWithAuthor = await pb
+								.collection('posts')
+								.getFirstListItem('', {
+									expand: [{ key: 'author', fields: ['id', 'name'] }],
+								})
+							expectTypeOf(postsWithAuthor).branded.toEqualTypeOf<
+								Post & { expand: { author: Pick<User, 'id' | 'name'> } }
+							>()
+						})
+
+						it('only accepts fields that actually exist', () => {
+							pb.collection('posts').getFirstListItem('', {
+								expand: [{ key: 'author', fields: ['id', 'name'] }],
+							})
+							pb.collection('posts').getFirstListItem('', {
+								// @ts-expect-error
+								expand: [{ key: 'author', fields: ['foo'] }],
+							})
+							pb.collection('posts').getFirstListItem('', {
+								// @ts-expect-error
+								expand: [{ key: 'author', fields: ['foo:excerpt(10)'] }],
+							})
+						})
+
+						it('lets you use modifiers like :excerpt', () => {
+							expectTypeOf(
+								pb.collection('comments').getFirstListItem
+							).toBeCallableWith('', {
+								expand: [{ key: 'post', fields: ['id', 'title:excerpt(10)'] }],
+							})
+						})
+
+						it("modifiers don't affect types", async () => {
+							const withoutModifier = await pb
+								.collection('comments')
+								.getFirstListItem('', {
+									expand: [{ key: 'post', fields: ['id', 'title'] }],
+								})
+							const withModifier = await pb
+								.collection('comments')
+								.getFirstListItem('', {
+									expand: [{ key: 'post', fields: ['id', 'title:excerpt(10)'] }],
+								})
+
+							expectTypeOf(withModifier).toEqualTypeOf<
+								Awaited<typeof withoutModifier>
+							>()
+						})
+					})
+
+					describe('expand', () => {
+						it("can't be expanded with unrelated relations", () => {
+							pb.collection('posts').getFirstListItem('', {
+								// @ts-expect-error
+								expand: [{ key: 'author', expand: [{ key: 'tags' }] }],
+							})
+						})
+
+						it('types single required to-one expand', async () => {
+							const comment = await pb.collection('comments').getFirstListItem('', {
+								expand: [{ key: 'post', expand: [{ key: 'toOneRequired1' }] }],
+							})
+							expectTypeOf(comment).branded.toEqualTypeOf<
+								Comment & {
+									expand: {
+										post: Post & { expand: { toOneRequired1: ToOneRequired } }
+									}
+								}
+							>()
+						})
+
+						it('types single optional to-one expand', async () => {
+							const comment = await pb.collection('comments').getFirstListItem('', {
+								expand: [{ key: 'post', expand: [{ key: 'toOneOptional1' }] }],
+							})
+							expectTypeOf(comment).branded.toEqualTypeOf<
+								Comment & {
+									expand: {
+										post: Post & { expand: { toOneOptional1?: ToOneOptional } }
+									}
+								}
+							>()
+						})
+
+						it('types single required to-many expand', async () => {
+							const comment = await pb.collection('comments').getFirstListItem('', {
+								expand: [{ key: 'post', expand: [{ key: 'toManyRequired1' }] }],
+							})
+							expectTypeOf(comment).branded.toEqualTypeOf<
+								Comment & {
+									expand: {
+										post: Post & {
+											expand: { toManyRequired1: ToManyRequired[] }
+										}
+									}
+								}
+							>()
+						})
+
+						it('types single optional to-many expand', async () => {
+							const comment = await pb.collection('comments').getFirstListItem('', {
+								expand: [{ key: 'post', expand: [{ key: 'toManyOptional1' }] }],
+							})
+							expectTypeOf(comment).branded.toEqualTypeOf<
+								Comment & {
+									expand: {
+										post: Post & {
+											expand: { toManyOptional1?: ToManyOptional[] }
+										}
+									}
+								}
+							>()
+						})
+					})
+				})
+
+				describe('in `expand` (to-many)', () => {
+					it('returns type as is if `fields` is not specified (required)', async () => {
+						const bases = await pb
+							.collection('base')
+							.getFirstListItem('', { expand: [{ key: 'toManyRequired1' }] })
+						expectTypeOf(bases).branded.toEqualTypeOf<
+							Base & { expand: { toManyRequired1: ToManyRequired[] } }
+						>()
+					})
+
+					it('returns type as is if `fields` is not specified (optional)', async () => {
+						const bases = await pb
+							.collection('base')
+							.getFirstListItem('', { expand: [{ key: 'toManyOptional1' }] })
+						expectTypeOf(bases).branded.toEqualTypeOf<
+							Base & { expand: { toManyOptional1?: ToManyOptional[] } }
+						>()
+					})
+
+					describe('fields', () => {
+						it('returns type with only specified fields', async () => {
+							const posts = await pb.collection('posts').getFirstListItem('', {
+								expand: [{ key: 'tags', fields: ['id', 'name'] }],
+							})
+							expectTypeOf(posts).branded.toEqualTypeOf<
+								Post & { expand: { tags?: Pick<Tag, 'id' | 'name'>[] } }
+							>()
+						})
+
+						it('only accepts fields that actually exist', () => {
+							pb.collection('posts').getFirstListItem('', {
+								expand: [{ key: 'tags', fields: ['id', 'name'] }],
+							})
+							pb.collection('posts').getFirstListItem('', {
+								// @ts-expect-error
+								expand: [{ key: 'tags', fields: ['foo'] }],
+							})
+							pb.collection('posts').getFirstListItem('', {
+								// @ts-expect-error
+								expand: [{ key: 'tags', fields: ['foo:excerpt(10)'] }],
+							})
+						})
+
+						it('lets you use modifiers like :excerpt', () => {
+							expectTypeOf(pb.collection('users').getFirstListItem).toBeCallableWith(
+								'',
+								{
+									expand: [
+										{
+											key: 'posts_via_author',
+											fields: ['id', 'title:excerpt(10)'],
+										},
+									],
+								}
+							)
+						})
+
+						it("modifiers don't affect types", async () => {
+							const withoutModifier = await pb
+								.collection('users')
+								.getFirstListItem('', {
+									expand: [{ key: 'posts_via_author', fields: ['id', 'title'] }],
+								})
+							const withModifier = await pb.collection('users').getFirstListItem('', {
+								expand: [
+									{
+										key: 'posts_via_author',
+										fields: ['id', 'title:excerpt(10)'],
+									},
+								],
+							})
+
+							expectTypeOf(withModifier).toEqualTypeOf<
+								Awaited<typeof withoutModifier>
+							>()
+						})
 					})
 				})
 			})
@@ -1825,7 +2229,10 @@ describe('PocketBaseTS', () => {
 				const user = await pb
 					.collection('users')
 					.getOne('', { expand: [{ key: 'posts_via_author' }] })
-				expectTypeOf(user).toEqualTypeOf<User & { expand?: { posts_via_author: Post[] } }>()
+
+				expectTypeOf(user).branded.toEqualTypeOf<
+					User & { expand: { posts_via_author?: Post[] } }
+				>()
 			})
 
 			it('lets you override back relations', async () => {
@@ -1850,7 +2257,7 @@ describe('PocketBaseTS', () => {
 					.collection('users')
 					.getOne('', { expand: [{ key: 'userDetail_via_user' }] })
 
-				expectTypeOf(user).toEqualTypeOf<
+				expectTypeOf(user).branded.toEqualTypeOf<
 					User & { expand: { userDetail_via_user: UserDetail } }
 				>()
 			})
@@ -1905,7 +2312,7 @@ describe('PocketBaseTS', () => {
 						const post = await pb.collection('posts').getOne('', {
 							expand: [{ key: 'toOneRequired1' }],
 						})
-						expectTypeOf(post).toEqualTypeOf<
+						expectTypeOf(post).branded.toEqualTypeOf<
 							Post & { expand: { toOneRequired1: ToOneRequired } }
 						>()
 					})
@@ -1914,8 +2321,8 @@ describe('PocketBaseTS', () => {
 						const post = await pb.collection('posts').getOne('', {
 							expand: [{ key: 'toOneOptional1' }],
 						})
-						expectTypeOf(post).toEqualTypeOf<
-							Post & { expand?: { toOneOptional1: ToOneOptional } }
+						expectTypeOf(post).branded.toEqualTypeOf<
+							Post & { expand: { toOneOptional1?: ToOneOptional } }
 						>()
 					})
 
@@ -1923,7 +2330,7 @@ describe('PocketBaseTS', () => {
 						const post = await pb.collection('posts').getOne('', {
 							expand: [{ key: 'toManyRequired1' }],
 						})
-						expectTypeOf(post).toEqualTypeOf<
+						expectTypeOf(post).branded.toEqualTypeOf<
 							Post & { expand: { toManyRequired1: ToManyRequired[] } }
 						>()
 					})
@@ -1932,8 +2339,8 @@ describe('PocketBaseTS', () => {
 						const post = await pb.collection('posts').getOne('', {
 							expand: [{ key: 'toManyOptional1' }],
 						})
-						expectTypeOf(post).toEqualTypeOf<
-							Post & { expand?: { toManyOptional1: ToManyOptional[] } }
+						expectTypeOf(post).branded.toEqualTypeOf<
+							Post & { expand: { toManyOptional1?: ToManyOptional[] } }
 						>()
 					})
 
@@ -1941,7 +2348,7 @@ describe('PocketBaseTS', () => {
 						const post = await pb.collection('posts').getOne('', {
 							expand: [{ key: 'author' }, { key: 'toOneRequired1' }],
 						})
-						expectTypeOf(post).toEqualTypeOf<
+						expectTypeOf(post).branded.toEqualTypeOf<
 							Post & {
 								expand: {
 									author: User
@@ -1970,9 +2377,9 @@ describe('PocketBaseTS', () => {
 						const post = await pb.collection('posts').getOne('', {
 							expand: [{ key: 'toOneOptional1' }, { key: 'toOneOptional2' }],
 						})
-						expectTypeOf(post).toEqualTypeOf<
+						expectTypeOf(post).branded.toEqualTypeOf<
 							Post & {
-								expand?: {
+								expand: {
 									toOneOptional1?: ToOneOptional
 									toOneOptional2?: ToOneOptional
 								}
@@ -1984,7 +2391,7 @@ describe('PocketBaseTS', () => {
 						const post = await pb.collection('posts').getOne('', {
 							expand: [{ key: 'toManyRequired1' }, { key: 'toManyRequired2' }],
 						})
-						expectTypeOf(post).toEqualTypeOf<
+						expectTypeOf(post).branded.toEqualTypeOf<
 							Post & {
 								expand: {
 									toManyRequired1: ToManyRequired[]
@@ -2013,9 +2420,9 @@ describe('PocketBaseTS', () => {
 						const post = await pb.collection('posts').getOne('', {
 							expand: [{ key: 'toManyOptional1' }, { key: 'toManyOptional2' }],
 						})
-						expectTypeOf(post).toEqualTypeOf<
+						expectTypeOf(post).branded.toEqualTypeOf<
 							Post & {
-								expand?: {
+								expand: {
 									toManyOptional1?: ToManyOptional[]
 									toManyOptional2?: ToManyOptional[]
 								}
@@ -2027,7 +2434,7 @@ describe('PocketBaseTS', () => {
 						const post = await pb.collection('posts').getOne('', {
 							expand: [{ key: 'toOneRequired1' }, { key: 'toManyRequired1' }],
 						})
-						expectTypeOf(post).toEqualTypeOf<
+						expectTypeOf(post).branded.toEqualTypeOf<
 							Post & {
 								expand: {
 									toOneRequired1: ToOneRequired
@@ -2071,9 +2478,9 @@ describe('PocketBaseTS', () => {
 						const post = await pb.collection('posts').getOne('', {
 							expand: [{ key: 'toOneOptional1' }, { key: 'toManyOptional1' }],
 						})
-						expectTypeOf(post).toEqualTypeOf<
+						expectTypeOf(post).branded.toEqualTypeOf<
 							Post & {
-								expand?: {
+								expand: {
 									toOneOptional1?: ToOneOptional
 									toManyOptional1?: ToManyOptional[]
 								}
@@ -2088,7 +2495,7 @@ describe('PocketBaseTS', () => {
 					const posts = await pb
 						.collection('posts')
 						.getOne('', { expand: [{ key: 'toOneRequired1' }] })
-					expectTypeOf(posts).toEqualTypeOf<
+					expectTypeOf(posts).branded.toEqualTypeOf<
 						Post & { expand: { toOneRequired1: ToOneRequired } }
 					>()
 				})
@@ -2097,8 +2504,8 @@ describe('PocketBaseTS', () => {
 					const posts = await pb
 						.collection('posts')
 						.getOne('', { expand: [{ key: 'toOneOptional1' }] })
-					expectTypeOf(posts).toEqualTypeOf<
-						Post & { expand?: { toOneOptional1: ToOneOptional } }
+					expectTypeOf(posts).branded.toEqualTypeOf<
+						Post & { expand: { toOneOptional1?: ToOneOptional } }
 					>()
 				})
 
@@ -2107,7 +2514,7 @@ describe('PocketBaseTS', () => {
 						const postWithAuthor = await pb
 							.collection('posts')
 							.getOne('', { expand: [{ key: 'author', fields: ['id', 'name'] }] })
-						expectTypeOf(postWithAuthor).toEqualTypeOf<
+						expectTypeOf(postWithAuthor).branded.toEqualTypeOf<
 							Post & { expand: { author: Pick<User, 'id' | 'name'> } }
 						>()
 					})
@@ -2156,7 +2563,7 @@ describe('PocketBaseTS', () => {
 						const comment = await pb.collection('comments').getOne('', {
 							expand: [{ key: 'post', expand: [{ key: 'toOneRequired1' }] }],
 						})
-						expectTypeOf(comment).toEqualTypeOf<
+						expectTypeOf(comment).branded.toEqualTypeOf<
 							Comment & {
 								expand: {
 									post: Post & { expand: { toOneRequired1: ToOneRequired } }
@@ -2169,10 +2576,10 @@ describe('PocketBaseTS', () => {
 						const comment = await pb.collection('comments').getOne('', {
 							expand: [{ key: 'post', expand: [{ key: 'toOneOptional1' }] }],
 						})
-						expectTypeOf(comment).toEqualTypeOf<
+						expectTypeOf(comment).branded.toEqualTypeOf<
 							Comment & {
 								expand: {
-									post: Post & { expand?: { toOneOptional1: ToOneOptional } }
+									post: Post & { expand: { toOneOptional1?: ToOneOptional } }
 								}
 							}
 						>()
@@ -2182,7 +2589,7 @@ describe('PocketBaseTS', () => {
 						const comment = await pb.collection('comments').getOne('', {
 							expand: [{ key: 'post', expand: [{ key: 'toManyRequired1' }] }],
 						})
-						expectTypeOf(comment).toEqualTypeOf<
+						expectTypeOf(comment).branded.toEqualTypeOf<
 							Comment & {
 								expand: {
 									post: Post & { expand: { toManyRequired1: ToManyRequired[] } }
@@ -2195,10 +2602,10 @@ describe('PocketBaseTS', () => {
 						const comment = await pb.collection('comments').getOne('', {
 							expand: [{ key: 'post', expand: [{ key: 'toManyOptional1' }] }],
 						})
-						expectTypeOf(comment).toEqualTypeOf<
+						expectTypeOf(comment).branded.toEqualTypeOf<
 							Comment & {
 								expand: {
-									post: Post & { expand?: { toManyOptional1: ToManyOptional[] } }
+									post: Post & { expand: { toManyOptional1?: ToManyOptional[] } }
 								}
 							}
 						>()
@@ -2213,7 +2620,7 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(comment).toEqualTypeOf<
+						expectTypeOf(comment).branded.toEqualTypeOf<
 							Comment & {
 								expand: {
 									post: Post & {
@@ -2236,7 +2643,7 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(comment).toEqualTypeOf<
+						expectTypeOf(comment).branded.toEqualTypeOf<
 							Comment & {
 								expand: {
 									post: Post & {
@@ -2260,11 +2667,11 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(comment).toEqualTypeOf<
+						expectTypeOf(comment).branded.toEqualTypeOf<
 							Comment & {
 								expand: {
 									post: Post & {
-										expand?: {
+										expand: {
 											toOneOptional1?: ToOneOptional
 											toOneOptional2?: ToOneOptional
 										}
@@ -2286,7 +2693,7 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(comment).toEqualTypeOf<
+						expectTypeOf(comment).branded.toEqualTypeOf<
 							Comment & {
 								expand: {
 									post: Post & {
@@ -2312,7 +2719,7 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(comment).toEqualTypeOf<
+						expectTypeOf(comment).branded.toEqualTypeOf<
 							Comment & {
 								expand: {
 									post: Post & {
@@ -2339,11 +2746,11 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(comment).toEqualTypeOf<
+						expectTypeOf(comment).branded.toEqualTypeOf<
 							Comment & {
 								expand: {
 									post: Post & {
-										expand?: {
+										expand: {
 											toManyOptional2?: ToManyOptional[]
 											toManyOptional1?: ToManyOptional[]
 										}
@@ -2362,7 +2769,7 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(comment).toEqualTypeOf<
+						expectTypeOf(comment).branded.toEqualTypeOf<
 							Comment & {
 								expand: {
 									post: Post & {
@@ -2386,7 +2793,7 @@ describe('PocketBaseTS', () => {
 							],
 						})
 
-						expectTypeOf(comment).toEqualTypeOf<
+						expectTypeOf(comment).branded.toEqualTypeOf<
 							Comment & {
 								expand: {
 									post: Post & {
@@ -2410,7 +2817,7 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(comment).toEqualTypeOf<
+						expectTypeOf(comment).branded.toEqualTypeOf<
 							Comment & {
 								expand: {
 									post: Post & {
@@ -2434,11 +2841,11 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(comment).toEqualTypeOf<
+						expectTypeOf(comment).branded.toEqualTypeOf<
 							Comment & {
 								expand: {
 									post: Post & {
-										expand?: {
+										expand: {
 											toOneOptional1?: ToOneOptional
 											toManyOptional1?: ToManyOptional[]
 										}
@@ -2455,7 +2862,7 @@ describe('PocketBaseTS', () => {
 					const base = await pb
 						.collection('base')
 						.getOne('', { expand: [{ key: 'toManyRequired1' }] })
-					expectTypeOf(base).toEqualTypeOf<
+					expectTypeOf(base).branded.toEqualTypeOf<
 						Base & { expand: { toManyRequired1: ToManyRequired[] } }
 					>()
 				})
@@ -2464,8 +2871,8 @@ describe('PocketBaseTS', () => {
 					const base = await pb
 						.collection('base')
 						.getOne('', { expand: [{ key: 'toManyOptional1' }] })
-					expectTypeOf(base).toEqualTypeOf<
-						Base & { expand?: { toManyOptional1: ToManyOptional[] } }
+					expectTypeOf(base).branded.toEqualTypeOf<
+						Base & { expand: { toManyOptional1?: ToManyOptional[] } }
 					>()
 				})
 
@@ -2474,8 +2881,8 @@ describe('PocketBaseTS', () => {
 						const posts = await pb
 							.collection('posts')
 							.getOne('', { expand: [{ key: 'tags', fields: ['id', 'name'] }] })
-						expectTypeOf(posts).toEqualTypeOf<
-							Post & { expand?: { tags: Pick<Tag, 'id' | 'name'>[] } }
+						expectTypeOf(posts).branded.toEqualTypeOf<
+							Post & { expand: { tags?: Pick<Tag, 'id' | 'name'>[] } }
 						>()
 					})
 
@@ -2530,7 +2937,7 @@ describe('PocketBaseTS', () => {
 								{ key: 'toManyRequired1', expand: [{ key: 'toOneRequired1' }] },
 							],
 						})
-						expectTypeOf(base).toEqualTypeOf<
+						expectTypeOf(base).branded.toEqualTypeOf<
 							Base & {
 								expand: {
 									toManyRequired1: (ToManyRequired & {
@@ -2547,11 +2954,11 @@ describe('PocketBaseTS', () => {
 								{ key: 'toManyRequired1', expand: [{ key: 'toOneOptional1' }] },
 							],
 						})
-						expectTypeOf(base).toEqualTypeOf<
+						expectTypeOf(base).branded.toEqualTypeOf<
 							Base & {
 								expand: {
 									toManyRequired1: (ToManyRequired & {
-										expand?: { toOneOptional1: ToOneOptional }
+										expand: { toOneOptional1?: ToOneOptional }
 									})[]
 								}
 							}
@@ -2564,7 +2971,7 @@ describe('PocketBaseTS', () => {
 								{ key: 'toManyRequired1', expand: [{ key: 'toManyRequired2' }] },
 							],
 						})
-						expectTypeOf(base).toEqualTypeOf<
+						expectTypeOf(base).branded.toEqualTypeOf<
 							Base & {
 								expand: {
 									toManyRequired1: (ToManyRequired & {
@@ -2581,11 +2988,11 @@ describe('PocketBaseTS', () => {
 								{ key: 'toManyRequired1', expand: [{ key: 'toManyOptional1' }] },
 							],
 						})
-						expectTypeOf(base).toEqualTypeOf<
+						expectTypeOf(base).branded.toEqualTypeOf<
 							Base & {
 								expand: {
 									toManyRequired1: (ToManyRequired & {
-										expand?: { toManyOptional1: ToManyOptional[] }
+										expand: { toManyOptional1?: ToManyOptional[] }
 									})[]
 								}
 							}
@@ -2601,7 +3008,7 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(base).toEqualTypeOf<
+						expectTypeOf(base).branded.toEqualTypeOf<
 							Base & {
 								expand: {
 									toManyRequired1: (ToManyRequired & {
@@ -2624,7 +3031,7 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(base).toEqualTypeOf<
+						expectTypeOf(base).branded.toEqualTypeOf<
 							Base & {
 								expand: {
 									toManyRequired1: (ToManyRequired & {
@@ -2648,11 +3055,11 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(base).toEqualTypeOf<
+						expectTypeOf(base).branded.toEqualTypeOf<
 							Base & {
 								expand: {
 									toManyRequired1: (ToManyRequired & {
-										expand?: {
+										expand: {
 											toOneOptional1?: ToOneOptional
 											toOneOptional2?: ToOneOptional
 										}
@@ -2674,7 +3081,7 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(base).toEqualTypeOf<
+						expectTypeOf(base).branded.toEqualTypeOf<
 							Base & {
 								expand: {
 									toManyRequired1: (ToManyRequired & {
@@ -2700,7 +3107,7 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(base).toEqualTypeOf<
+						expectTypeOf(base).branded.toEqualTypeOf<
 							Base & {
 								expand: {
 									toManyRequired1: (ToManyRequired & {
@@ -2727,11 +3134,11 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(base).toEqualTypeOf<
+						expectTypeOf(base).branded.toEqualTypeOf<
 							Base & {
 								expand: {
 									toManyRequired1: (ToManyRequired & {
-										expand?: {
+										expand: {
 											toManyOptional1?: ToManyOptional[]
 											toManyOptional2?: ToManyOptional[]
 										}
@@ -2750,7 +3157,7 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(base).toEqualTypeOf<
+						expectTypeOf(base).branded.toEqualTypeOf<
 							Base & {
 								expand: {
 									toManyRequired1: (ToManyRequired & {
@@ -2773,7 +3180,7 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(base).toEqualTypeOf<
+						expectTypeOf(base).branded.toEqualTypeOf<
 							Base & {
 								expand: {
 									toManyRequired1: (ToManyRequired & {
@@ -2797,7 +3204,7 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(base).toEqualTypeOf<
+						expectTypeOf(base).branded.toEqualTypeOf<
 							Base & {
 								expand: {
 									toManyRequired1: (ToManyRequired & {
@@ -2821,11 +3228,11 @@ describe('PocketBaseTS', () => {
 								},
 							],
 						})
-						expectTypeOf(base).toEqualTypeOf<
+						expectTypeOf(base).branded.toEqualTypeOf<
 							Base & {
 								expand: {
 									toManyRequired1: (ToManyRequired & {
-										expand?: {
+										expand: {
 											toOneOptional1?: ToOneOptional
 											toManyOptional1?: ToManyOptional[]
 										}
@@ -2847,7 +3254,9 @@ describe('PocketBaseTS', () => {
 				const user = await pb
 					.collection('users')
 					.create({ name: 'test' }, { expand: [{ key: 'posts_via_author' }] })
-				expectTypeOf(user).toEqualTypeOf<User & { expand?: { posts_via_author: Post[] } }>()
+				expectTypeOf(user).branded.toEqualTypeOf<
+					User & { expand: { posts_via_author?: Post[] } }
+				>()
 			})
 
 			it('lets you override back relations', async () => {
@@ -2872,7 +3281,7 @@ describe('PocketBaseTS', () => {
 					.collection('users')
 					.create({ name: 'test' }, { expand: [{ key: 'userDetail_via_user' }] })
 
-				expectTypeOf(user).toEqualTypeOf<
+				expectTypeOf(user).branded.toEqualTypeOf<
 					User & { expand: { userDetail_via_user: UserDetail } }
 				>()
 			})
@@ -2951,7 +3360,7 @@ describe('PocketBaseTS', () => {
 								{ author: '', title: '', tags: [] },
 								{ expand: [{ key: 'toOneRequired1' }] }
 							)
-						expectTypeOf(post).toEqualTypeOf<
+						expectTypeOf(post).branded.toEqualTypeOf<
 							Post & { expand: { toOneRequired1: ToOneRequired } }
 						>()
 					})
@@ -2963,8 +3372,8 @@ describe('PocketBaseTS', () => {
 								{ author: '', title: '', tags: [] },
 								{ expand: [{ key: 'toOneOptional1' }] }
 							)
-						expectTypeOf(post).toEqualTypeOf<
-							Post & { expand?: { toOneOptional1: ToOneOptional } }
+						expectTypeOf(post).branded.toEqualTypeOf<
+							Post & { expand: { toOneOptional1?: ToOneOptional } }
 						>()
 					})
 
@@ -2975,7 +3384,7 @@ describe('PocketBaseTS', () => {
 								{ author: '', title: '', tags: [] },
 								{ expand: [{ key: 'toManyRequired1' }] }
 							)
-						expectTypeOf(post).toEqualTypeOf<
+						expectTypeOf(post).branded.toEqualTypeOf<
 							Post & { expand: { toManyRequired1: ToManyRequired[] } }
 						>()
 					})
@@ -2987,9 +3396,287 @@ describe('PocketBaseTS', () => {
 								{ author: '', title: '', tags: [] },
 								{ expand: [{ key: 'toManyOptional1' }] }
 							)
-						expectTypeOf(post).toEqualTypeOf<
-							Post & { expand?: { toManyOptional1: ToManyOptional[] } }
+						expectTypeOf(post).branded.toEqualTypeOf<
+							Post & { expand: { toManyOptional1?: ToManyOptional[] } }
 						>()
+					})
+				})
+
+				describe('in `expand` (to-one)', () => {
+					it('returns type as is if `fields` is not specified (required)', async () => {
+						const posts = await pb
+							.collection('posts')
+							.create(
+								{ author: '', title: '', tags: [] },
+								{ expand: [{ key: 'toOneRequired1' }] }
+							)
+						expectTypeOf(posts).branded.toEqualTypeOf<
+							Post & { expand: { toOneRequired1: ToOneRequired } }
+						>()
+					})
+
+					it('returns type as is if `fields` is not specified (optional)', async () => {
+						const posts = await pb
+							.collection('posts')
+							.create(
+								{ author: '', title: '', tags: [] },
+								{ expand: [{ key: 'toOneOptional1' }] }
+							)
+						expectTypeOf(posts).branded.toEqualTypeOf<
+							Post & { expand: { toOneOptional1?: ToOneOptional } }
+						>()
+					})
+
+					describe('fields', () => {
+						it('returns type with only specified fields', async () => {
+							const postsWithAuthor = await pb
+								.collection('posts')
+								.create(
+									{ author: '', title: '', tags: [] },
+									{ expand: [{ key: 'author', fields: ['id', 'name'] }] }
+								)
+							expectTypeOf(postsWithAuthor).branded.toEqualTypeOf<
+								Post & { expand: { author: Pick<User, 'id' | 'name'> } }
+							>()
+						})
+
+						it('only accepts fields that actually exist', () => {
+							pb.collection('posts').create(
+								{ author: '', title: '', tags: [] },
+								{ expand: [{ key: 'author', fields: ['id', 'name'] }] }
+							)
+							pb.collection('posts').create(
+								{ author: '', title: '', tags: [] },
+								{
+									// @ts-expect-error
+									expand: [{ key: 'author', fields: ['foo'] }],
+								}
+							)
+							pb.collection('posts').create(
+								{ author: '', title: '', tags: [] },
+								{
+									// @ts-expect-error
+									expand: [{ key: 'author', fields: ['foo:excerpt(10)'] }],
+								}
+							)
+						})
+
+						it('lets you use modifiers like :excerpt', () => {
+							expectTypeOf(pb.collection('comments').create).toBeCallableWith(
+								{ post: '', user: '', message: '' },
+								{ expand: [{ key: 'post', fields: ['id', 'title:excerpt(10)'] }] }
+							)
+						})
+
+						it("modifiers don't affect types", async () => {
+							const withoutModifier = await pb
+								.collection('comments')
+								.create(
+									{ post: '', user: '', message: '' },
+									{ expand: [{ key: 'post', fields: ['id', 'title'] }] }
+								)
+							const withModifier = await pb.collection('comments').create(
+								{ post: '', user: '', message: '' },
+								{
+									expand: [{ key: 'post', fields: ['id', 'title:excerpt(10)'] }],
+								}
+							)
+
+							expectTypeOf(withModifier).toEqualTypeOf<
+								Awaited<typeof withoutModifier>
+							>()
+						})
+					})
+
+					describe('expand', () => {
+						it("can't be expanded with unrelated relations", () => {
+							pb.collection('posts').create(
+								{ author: '', title: '', tags: [] },
+								{
+									// @ts-expect-error
+									expand: [{ key: 'author', expand: [{ key: 'tags' }] }],
+								}
+							)
+						})
+
+						it('types single required to-one expand', async () => {
+							const comment = await pb.collection('comments').create(
+								{ post: '', user: '', message: '' },
+								{
+									expand: [{ key: 'post', expand: [{ key: 'toOneRequired1' }] }],
+								}
+							)
+							expectTypeOf(comment).branded.toEqualTypeOf<
+								Comment & {
+									expand: {
+										post: Post & { expand: { toOneRequired1: ToOneRequired } }
+									}
+								}
+							>()
+						})
+
+						it('types single optional to-one expand', async () => {
+							const comment = await pb.collection('comments').create(
+								{ post: '', user: '', message: '' },
+								{
+									expand: [{ key: 'post', expand: [{ key: 'toOneOptional1' }] }],
+								}
+							)
+							expectTypeOf(comment).branded.toEqualTypeOf<
+								Comment & {
+									expand: {
+										post: Post & { expand: { toOneOptional1?: ToOneOptional } }
+									}
+								}
+							>()
+						})
+
+						it('types single required to-many expand', async () => {
+							const comment = await pb.collection('comments').create(
+								{ post: '', user: '', message: '' },
+								{
+									expand: [{ key: 'post', expand: [{ key: 'toManyRequired1' }] }],
+								}
+							)
+							expectTypeOf(comment).branded.toEqualTypeOf<
+								Comment & {
+									expand: {
+										post: Post & {
+											expand: { toManyRequired1: ToManyRequired[] }
+										}
+									}
+								}
+							>()
+						})
+
+						it('types single optional to-many expand', async () => {
+							const comment = await pb.collection('comments').create(
+								{ post: '', user: '', message: '' },
+								{
+									expand: [{ key: 'post', expand: [{ key: 'toManyOptional1' }] }],
+								}
+							)
+							expectTypeOf(comment).branded.toEqualTypeOf<
+								Comment & {
+									expand: {
+										post: Post & {
+											expand: { toManyOptional1?: ToManyOptional[] }
+										}
+									}
+								}
+							>()
+						})
+					})
+				})
+
+				describe('in `expand` (to-many)', () => {
+					it('returns type as is if `fields` is not specified (required)', async () => {
+						const bases = await pb.collection('base').create(
+							{
+								stringField: '',
+								numberField: 0,
+								booleanField: false,
+								toOneRequired1: '',
+								toOneRequired2: '',
+								toManyRequired1: [],
+								toManyRequired2: [],
+							},
+							{ expand: [{ key: 'toManyRequired1' }] }
+						)
+						expectTypeOf(bases).branded.toEqualTypeOf<
+							Base & { expand: { toManyRequired1: ToManyRequired[] } }
+						>()
+					})
+
+					it('returns type as is if `fields` is not specified (optional)', async () => {
+						const bases = await pb.collection('base').create(
+							{
+								stringField: '',
+								numberField: 0,
+								booleanField: false,
+								toOneRequired1: '',
+								toOneRequired2: '',
+								toManyRequired1: [],
+								toManyRequired2: [],
+							},
+							{ expand: [{ key: 'toManyOptional1' }] }
+						)
+						expectTypeOf(bases).branded.toEqualTypeOf<
+							Base & { expand: { toManyOptional1?: ToManyOptional[] } }
+						>()
+					})
+
+					describe('fields', () => {
+						it('returns type with only specified fields', async () => {
+							const posts = await pb
+								.collection('posts')
+								.create(
+									{ author: '', title: '', tags: [] },
+									{ expand: [{ key: 'tags', fields: ['id', 'name'] }] }
+								)
+							expectTypeOf(posts).branded.toEqualTypeOf<
+								Post & { expand: { tags?: Pick<Tag, 'id' | 'name'>[] } }
+							>()
+						})
+
+						it('only accepts fields that actually exist', () => {
+							pb.collection('posts').create(
+								{ author: '', title: '', tags: [] },
+								{ expand: [{ key: 'tags', fields: ['id', 'name'] }] }
+							)
+							pb.collection('posts').create(
+								{ author: '', title: '', tags: [] },
+								{
+									// @ts-expect-error
+									expand: [{ key: 'tags', fields: ['foo'] }],
+								}
+							)
+							pb.collection('posts').create(
+								{ author: '', title: '', tags: [] },
+								{
+									// @ts-expect-error
+									expand: [{ key: 'tags', fields: ['foo:excerpt(10)'] }],
+								}
+							)
+						})
+
+						it('lets you use modifiers like :excerpt', () => {
+							expectTypeOf(pb.collection('users').create).toBeCallableWith(
+								{ name: 'test' },
+								{
+									expand: [
+										{
+											key: 'posts_via_author',
+											fields: ['id', 'title:excerpt(10)'],
+										},
+									],
+								}
+							)
+						})
+
+						it("modifiers don't affect types", async () => {
+							const withoutModifier = await pb.collection('users').create(
+								{ name: 'test' },
+								{
+									expand: [{ key: 'posts_via_author', fields: ['id', 'title'] }],
+								}
+							)
+							const withModifier = await pb.collection('users').create(
+								{ name: 'test' },
+								{
+									expand: [
+										{
+											key: 'posts_via_author',
+											fields: ['id', 'title:excerpt(10)'],
+										},
+									],
+								}
+							)
+
+							expectTypeOf(withModifier).toEqualTypeOf<
+								Awaited<typeof withoutModifier>
+							>()
+						})
 					})
 				})
 			})
@@ -3004,7 +3691,9 @@ describe('PocketBaseTS', () => {
 				const user = await pb
 					.collection('users')
 					.update('', { name: 'test' }, { expand: [{ key: 'posts_via_author' }] })
-				expectTypeOf(user).toEqualTypeOf<User & { expand?: { posts_via_author: Post[] } }>()
+				expectTypeOf(user).branded.toEqualTypeOf<
+					User & { expand: { posts_via_author?: Post[] } }
+				>()
 			})
 
 			it('lets you override back relations', async () => {
@@ -3029,7 +3718,7 @@ describe('PocketBaseTS', () => {
 					.collection('users')
 					.update('', { name: 'test' }, { expand: [{ key: 'userDetail_via_user' }] })
 
-				expectTypeOf(user).toEqualTypeOf<
+				expectTypeOf(user).branded.toEqualTypeOf<
 					User & { expand: { userDetail_via_user: UserDetail } }
 				>()
 			})
@@ -3102,7 +3791,7 @@ describe('PocketBaseTS', () => {
 						const post = await pb
 							.collection('posts')
 							.update('', { title: 'test' }, { expand: [{ key: 'toOneRequired1' }] })
-						expectTypeOf(post).toEqualTypeOf<
+						expectTypeOf(post).branded.toEqualTypeOf<
 							Post & { expand: { toOneRequired1: ToOneRequired } }
 						>()
 					})
@@ -3111,8 +3800,8 @@ describe('PocketBaseTS', () => {
 						const post = await pb
 							.collection('posts')
 							.update('', { title: 'test' }, { expand: [{ key: 'toOneOptional1' }] })
-						expectTypeOf(post).toEqualTypeOf<
-							Post & { expand?: { toOneOptional1: ToOneOptional } }
+						expectTypeOf(post).branded.toEqualTypeOf<
+							Post & { expand: { toOneOptional1?: ToOneOptional } }
 						>()
 					})
 
@@ -3120,7 +3809,7 @@ describe('PocketBaseTS', () => {
 						const post = await pb
 							.collection('posts')
 							.update('', { title: 'test' }, { expand: [{ key: 'toManyRequired1' }] })
-						expectTypeOf(post).toEqualTypeOf<
+						expectTypeOf(post).branded.toEqualTypeOf<
 							Post & { expand: { toManyRequired1: ToManyRequired[] } }
 						>()
 					})
@@ -3129,9 +3818,294 @@ describe('PocketBaseTS', () => {
 						const post = await pb
 							.collection('posts')
 							.update('', { title: 'test' }, { expand: [{ key: 'toManyOptional1' }] })
-						expectTypeOf(post).toEqualTypeOf<
-							Post & { expand?: { toManyOptional1: ToManyOptional[] } }
+						expectTypeOf(post).branded.toEqualTypeOf<
+							Post & { expand: { toManyOptional1?: ToManyOptional[] } }
 						>()
+					})
+				})
+
+				describe('in `expand` (to-one)', () => {
+					it('returns type as is if `fields` is not specified (required)', async () => {
+						const posts = await pb
+							.collection('posts')
+							.update('', { title: 'test' }, { expand: [{ key: 'toOneRequired1' }] })
+						expectTypeOf(posts).branded.toEqualTypeOf<
+							Post & { expand: { toOneRequired1: ToOneRequired } }
+						>()
+					})
+
+					it('returns type as is if `fields` is not specified (optional)', async () => {
+						const posts = await pb
+							.collection('posts')
+							.update('', { title: 'test' }, { expand: [{ key: 'toOneOptional1' }] })
+						expectTypeOf(posts).branded.toEqualTypeOf<
+							Post & { expand: { toOneOptional1?: ToOneOptional } }
+						>()
+					})
+
+					describe('fields', () => {
+						it('returns type with only specified fields', async () => {
+							const postsWithAuthor = await pb
+								.collection('posts')
+								.update(
+									'',
+									{ title: 'test' },
+									{ expand: [{ key: 'author', fields: ['id', 'name'] }] }
+								)
+							expectTypeOf(postsWithAuthor).branded.toEqualTypeOf<
+								Post & { expand: { author: Pick<User, 'id' | 'name'> } }
+							>()
+						})
+
+						it('only accepts fields that actually exist', () => {
+							pb.collection('posts').update(
+								'',
+								{ title: 'test' },
+								{
+									expand: [{ key: 'author', fields: ['id', 'name'] }],
+								}
+							)
+							pb.collection('posts').update(
+								'',
+								{ title: 'test' },
+								{
+									// @ts-expect-error
+									expand: [{ key: 'author', fields: ['foo'] }],
+								}
+							)
+							pb.collection('posts').update(
+								'',
+								{ title: 'test' },
+								{
+									// @ts-expect-error
+									expand: [{ key: 'author', fields: ['foo:excerpt(10)'] }],
+								}
+							)
+						})
+
+						it('lets you use modifiers like :excerpt', () => {
+							expectTypeOf(pb.collection('comments').update).toBeCallableWith(
+								'',
+								{ message: 'test' },
+								{ expand: [{ key: 'post', fields: ['id', 'title:excerpt(10)'] }] }
+							)
+						})
+
+						it("modifiers don't affect types", async () => {
+							const withoutModifier = await pb.collection('comments').update(
+								'',
+								{ message: 'test' },
+								{
+									expand: [{ key: 'post', fields: ['id', 'title'] }],
+								}
+							)
+							const withModifier = await pb.collection('comments').update(
+								'',
+								{ message: 'test' },
+								{
+									expand: [{ key: 'post', fields: ['id', 'title:excerpt(10)'] }],
+								}
+							)
+
+							expectTypeOf(withModifier).toEqualTypeOf<
+								Awaited<typeof withoutModifier>
+							>()
+						})
+					})
+
+					describe('expand', () => {
+						it("can't be expanded with unrelated relations", () => {
+							pb.collection('posts').update(
+								'',
+								{ title: 'test' },
+								{
+									// @ts-expect-error
+									expand: [{ key: 'author', expand: [{ key: 'tags' }] }],
+								}
+							)
+						})
+
+						it('types single required to-one expand', async () => {
+							const comment = await pb.collection('comments').update(
+								'',
+								{ message: 'test' },
+								{
+									expand: [{ key: 'post', expand: [{ key: 'toOneRequired1' }] }],
+								}
+							)
+							expectTypeOf(comment).branded.toEqualTypeOf<
+								Comment & {
+									expand: {
+										post: Post & { expand: { toOneRequired1: ToOneRequired } }
+									}
+								}
+							>()
+						})
+
+						it('types single optional to-one expand', async () => {
+							const comment = await pb.collection('comments').update(
+								'',
+								{ message: 'test' },
+								{
+									expand: [{ key: 'post', expand: [{ key: 'toOneOptional1' }] }],
+								}
+							)
+							expectTypeOf(comment).branded.toEqualTypeOf<
+								Comment & {
+									expand: {
+										post: Post & { expand: { toOneOptional1?: ToOneOptional } }
+									}
+								}
+							>()
+						})
+
+						it('types single required to-many expand', async () => {
+							const comment = await pb.collection('comments').update(
+								'',
+								{ message: 'test' },
+								{
+									expand: [{ key: 'post', expand: [{ key: 'toManyRequired1' }] }],
+								}
+							)
+							expectTypeOf(comment).branded.toEqualTypeOf<
+								Comment & {
+									expand: {
+										post: Post & {
+											expand: { toManyRequired1: ToManyRequired[] }
+										}
+									}
+								}
+							>()
+						})
+
+						it('types single optional to-many expand', async () => {
+							const comment = await pb.collection('comments').update(
+								'',
+								{ message: 'test' },
+								{
+									expand: [{ key: 'post', expand: [{ key: 'toManyOptional1' }] }],
+								}
+							)
+							expectTypeOf(comment).branded.toEqualTypeOf<
+								Comment & {
+									expand: {
+										post: Post & {
+											expand: { toManyOptional1?: ToManyOptional[] }
+										}
+									}
+								}
+							>()
+						})
+					})
+				})
+
+				describe('in `expand` (to-many)', () => {
+					it('returns type as is if `fields` is not specified (required)', async () => {
+						const bases = await pb.collection('base').update(
+							'',
+							{ stringField: 'test' },
+							{
+								expand: [{ key: 'toManyRequired1' }],
+							}
+						)
+						expectTypeOf(bases).branded.toEqualTypeOf<
+							Base & { expand: { toManyRequired1: ToManyRequired[] } }
+						>()
+					})
+
+					it('returns type as is if `fields` is not specified (optional)', async () => {
+						const bases = await pb.collection('base').update(
+							'',
+							{ stringField: 'test' },
+							{
+								expand: [{ key: 'toManyOptional1' }],
+							}
+						)
+						expectTypeOf(bases).branded.toEqualTypeOf<
+							Base & { expand: { toManyOptional1?: ToManyOptional[] } }
+						>()
+					})
+
+					describe('fields', () => {
+						it('returns type with only specified fields', async () => {
+							const posts = await pb.collection('posts').update(
+								'',
+								{ title: 'test' },
+								{
+									expand: [{ key: 'tags', fields: ['id', 'name'] }],
+								}
+							)
+							expectTypeOf(posts).branded.toEqualTypeOf<
+								Post & { expand: { tags?: Pick<Tag, 'id' | 'name'>[] } }
+							>()
+						})
+
+						it('only accepts fields that actually exist', () => {
+							pb.collection('posts').update(
+								'',
+								{ title: 'test' },
+								{
+									expand: [{ key: 'tags', fields: ['id', 'name'] }],
+								}
+							)
+							pb.collection('posts').update(
+								'',
+								{ title: 'test' },
+								{
+									// @ts-expect-error
+									expand: [{ key: 'tags', fields: ['foo'] }],
+								}
+							)
+							pb.collection('posts').update(
+								'',
+								{ title: 'test' },
+								{
+									// @ts-expect-error
+									expand: [{ key: 'tags', fields: ['foo:excerpt(10)'] }],
+								}
+							)
+						})
+
+						it('lets you use modifiers like :excerpt', () => {
+							expectTypeOf(pb.collection('users').update).toBeCallableWith(
+								'',
+								{ name: 'test' },
+								{
+									expand: [
+										{
+											key: 'posts_via_author',
+											fields: ['id', 'title:excerpt(10)'],
+										},
+									],
+								}
+							)
+						})
+
+						it("modifiers don't affect types", async () => {
+							const withoutModifier = await pb.collection('users').update(
+								'',
+								{ name: 'test' },
+								{
+									expand: [{ key: 'posts_via_author', fields: ['id', 'title'] }],
+								}
+							)
+							const withModifier = await pb.collection('users').update(
+								'',
+								{ name: 'test' },
+								{
+									expand: [
+										{
+											key: 'posts_via_author',
+											fields: ['id', 'title:excerpt(10)'],
+										},
+									],
+								}
+							)
+
+							expectTypeOf(withModifier).toEqualTypeOf<
+								Awaited<typeof withoutModifier>
+							>()
+						})
 					})
 				})
 			})

@@ -233,51 +233,32 @@ When the post doesn't have any comments, PocketBase returns something like this:
     "id": "1",
     "title": "Lorem ipsum",
     "tags": ["lorem", "ipsum"],
+    "expand": {},
     "created": "2024-01-01T00:00:00.000Z",
     "updated": "2024-01-01T00:00:00.000Z"
 }
 ```
 
-The response will not have
+instead of:
 
-```jsonc
+```json
 {
+    "id": "1",
+    "title": "Lorem ipsum",
+    "tags": ["lorem", "ipsum"],
     "expand": {
-        "comments_via_post": [],
+        "comments_via_post": []
     },
-}
-
-
-// or not even { expand: undefined } for that matter
-```
-
-So you will get a runtime error if you try to access `post.expand.comments_via_post` on a post with no comments.
-
-To handle cases like this, the wrapper will add the `?` modifier to `expand` itself if all the specified expands are for optional relation fields.
-
-```ts
-type Response = Post & {
-    expand?: {
-        comments_via_post: Comment[]
-    }
-}
-// or with multiple optional relations
-type Response = Post & {
-    expand?: {
-        tags?: Tag[]
-        comments_via_post?: Comment[]
-    }
+    "created": "2024-01-01T00:00:00.000Z",
+    "updated": "2024-01-01T00:00:00.000Z"
 }
 ```
 
-If you expand it along with fields that are not optional like `author`, `expand` will be present regardless of whether the post has comments or not.
-
-So the response will be typed as:
+So pocketbase-ts adds `?` modifiers to optional relation fields in `expand`.
 
 ```ts
 type Response = Post & {
     expand: {
-        author: User
         comments_via_post?: Comment[]
     }
 }
