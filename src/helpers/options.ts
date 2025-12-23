@@ -30,6 +30,7 @@ export type Options<
 		list: {
 			sort?:
 				| '@random'
+				| '@rowid'
 				| `${'' | '-'}${keyof TSchema[Key]['type'] & string}`
 				| (string & {})
 				| FilterHelper<TSchema, Key, TMaxDepth, false>
