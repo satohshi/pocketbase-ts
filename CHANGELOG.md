@@ -1,5 +1,11 @@
 # pocketbase-ts
 
+## 1.5.1
+
+### Patch Changes
+
+- 2e37bd0: add `@rowid` option to `sort`
+
 ## 1.5.0
 
 ### Minor Changes
