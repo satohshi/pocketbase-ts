@@ -195,7 +195,7 @@ const result = await pb.collection('posts').getFullList({
 ```
 
 This function is merely there to provide you with intellisense and help mitigate typos. It does not do any type narrowing or validation.  
-(i.e. the example above will still have `?` modifier on `expand` in the response type.)
+(i.e. the example above will still have `?` modifier on `expand.comments_via_post` in the response type.)
 
 ### Maximum expand depth
 
