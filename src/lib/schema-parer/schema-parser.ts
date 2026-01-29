@@ -1,8 +1,8 @@
-import type { SchemaDeclaration } from '../schema.js'
-import type { IsSameShape, MergeObjects, GetSingleType } from './type-utils.js'
+import type { SchemaDeclaration } from '../../schema.js'
+import type { MergeObjects, GetSingleType, Equals } from '../type-utils.js'
 
 type GetCollectionName<TSchema extends SchemaDeclaration, TObj> = keyof {
-	[K in keyof TSchema as IsSameShape<TSchema[K]['type'], TObj> extends true ? K : never]: unknown
+	[K in keyof TSchema as Equals<TSchema[K]['type'], TObj> extends true ? K : never]: unknown
 }
 
 /**
@@ -17,7 +17,7 @@ type BackRelationKey<
 	TCollectionName extends keyof TSchema,
 	TypeToLookFor,
 > = keyof {
-	[K in keyof TSchema[TCollectionName]['relations'] as IsSameShape<
+	[K in keyof TSchema[TCollectionName]['relations'] as Equals<
 		GetSingleType<TSchema[TCollectionName]['relations'][K]>,
 		TypeToLookFor
 	> extends true
@@ -37,7 +37,7 @@ type ImplicitRelations<TSchema extends SchemaDeclaration> = {
 	}
 }
 
-type RelHelper<TSchema extends SchemaDeclaration, T> = {
+type RelationHelper<TSchema extends SchemaDeclaration, T> = {
 	type: GetSingleType<T>
 	isOptional: undefined extends T ? true : false
 	isToMany: NonNullable<T> extends Array<any> ? true : false
@@ -47,7 +47,7 @@ type RelHelper<TSchema extends SchemaDeclaration, T> = {
 /** Relations that are explicitly defined in the schema */
 type ExplicitRelations<TSchema extends SchemaDeclaration> = {
 	[Collection in keyof TSchema]: {
-		[Relation in keyof TSchema[Collection]['relations']]-?: RelHelper<
+		[Relation in keyof TSchema[Collection]['relations']]-?: RelationHelper<
 			TSchema,
 			TSchema[Collection]['relations'][Relation]
 		>
@@ -55,6 +55,6 @@ type ExplicitRelations<TSchema extends SchemaDeclaration> = {
 }
 
 /** parse relations from the schema */
-export type RelParser<TSchema extends SchemaDeclaration> = {
+export type SchemaParser<TSchema extends SchemaDeclaration> = {
 	[K in keyof TSchema]: MergeObjects<ImplicitRelations<TSchema>[K], ExplicitRelations<TSchema>[K]>
 }

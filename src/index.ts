@@ -1,2 +1,2 @@
 export { PocketBaseTS } from './Client.js'
-export type { UniqueCollection } from './helpers/type-utils.js'
+export type { UniqueCollection } from './lib/type-utils.js'

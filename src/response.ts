@@ -1,7 +1,7 @@
-import type { RelParser } from './relation.js'
+import type { SchemaParser } from './lib/schema-parer/schema-parser.js'
 import type { Expand, Options } from './options.js'
-import type { SchemaDeclaration } from '../schema.js'
-import type { FieldsArrayToUnion } from './type-utils.js'
+import type { SchemaDeclaration } from './schema.js'
+import type { FieldsArrayToUnion } from './lib/type-utils.js'
 
 export type PBResponseType<
 	TSchema extends SchemaDeclaration,
@@ -18,7 +18,7 @@ type ProcessExpandArray<
 	TSchema extends SchemaDeclaration,
 	TTableName extends keyof TSchema,
 	TExpandArr,
-	_Relations extends RelParser<TSchema>[TTableName] = RelParser<TSchema>[TTableName],
+	_Relations extends SchemaParser<TSchema>[TTableName] = SchemaParser<TSchema>[TTableName],
 > =
 	TExpandArr extends Array<Expand<TSchema, TTableName>>
 		? {
@@ -43,7 +43,7 @@ type ProcessSingleExpand<
 	TTableName extends keyof TSchema,
 	TExpand extends Expand<TSchema, TTableName>,
 	_Rel extends
-		RelParser<TSchema>[TTableName][TExpand['key']] = RelParser<TSchema>[TTableName][TExpand['key']],
+		SchemaParser<TSchema>[TTableName][TExpand['key']] = SchemaParser<TSchema>[TTableName][TExpand['key']],
 	_Obj = _Rel['type'],
 > = HandleArray<
 	(FieldsArrayToUnion<TExpand['fields']> extends infer Fields extends keyof _Obj

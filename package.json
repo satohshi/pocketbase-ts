@@ -11,6 +11,7 @@
 		"pocketbase",
 		"typescript",
 		"option",
+		"query",
 		"types",
 		"schema"
 	],
@@ -21,9 +22,10 @@
 		"dist"
 	],
 	"scripts": {
-		"dev": "vitest --ui",
-		"build": "tsgo",
-		"lint": "tsgo --noEmit && prettier --check .",
+		"dev": "vitest",
+		"dev:ui": "vitest --ui",
+		"build": "tsgo -p tsconfig.build.json",
+		"lint": "tsgo -p tsconfig.build.json --noEmit && prettier --check .",
 		"format": "prettier --write .",
 		"test": "vitest run",
 		"release": "changeset publish"

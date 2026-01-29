@@ -1,20 +1,20 @@
 import PocketBase, { RecordService } from 'pocketbase'
-import { processFilterAndSort, processOptions } from '../helpers/option-parser.js'
+import { processFilterAndSort, processOptions } from '../lib/option-parser/option-parser.js'
 import type {
 	ListResult,
-	RecordSubscription,
-	UnsubscribeFunc,
-	RecordSubscribeOptions,
-	RecordFullListOptions,
-	RecordListOptions,
 	RecordOptions,
+	UnsubscribeFunc,
+	RecordListOptions,
+	RecordSubscription,
+	RecordFullListOptions,
+	RecordSubscribeOptions,
 } from 'pocketbase'
-import type { Options } from '../helpers/options.js'
-import type { BodyParams } from '../helpers/body-params.js'
-import type { FilterHelper } from '../helpers/filter.js'
+import type { Options } from '../options.js'
+import type { BodyParams } from '../body-params.js'
 import type { PocketBaseTS } from '../Client.js'
-import type { MergeObjects } from '../helpers/type-utils.js'
-import type { PBResponseType } from '../helpers/response.js'
+import type { MergeObjects } from '../lib/type-utils.js'
+import type { FilterHelpers } from '../lib/filter-sort-helper/filter.js'
+import type { PBResponseType } from '../response.js'
 import type { SchemaDeclaration } from '../schema.js'
 
 export class RecordServiceTS<
@@ -98,18 +98,18 @@ export class RecordServiceTS<
 	}
 
 	override async getFirstListItem(
-		filter: string | FilterHelper<TSchema, TKey, TMaxDepth, true>
+		filter: string | ((arg: FilterHelpers<TSchema, TKey, TMaxDepth>) => string)
 	): Promise<_Type>
 	override async getFirstListItem<
 		const TOptions extends MergeObjects<RecordListOptions, _ListOptions>,
 	>(
-		filter: string | FilterHelper<TSchema, TKey, TMaxDepth, true>,
+		filter: string | ((arg: FilterHelpers<TSchema, TKey, TMaxDepth>) => string),
 		options: TOptions
 	): Promise<PBResponseType<TSchema, TKey, TOptions, TMaxDepth>>
 	override async getFirstListItem<
 		const TOptions extends MergeObjects<RecordListOptions, _ListOptions>,
 	>(
-		filter: string | FilterHelper<TSchema, TKey, TMaxDepth, true>,
+		filter: string | ((arg: FilterHelpers<TSchema, TKey, TMaxDepth>) => string),
 		options?: TOptions
 	): Promise<_Type | PBResponseType<TSchema, TKey, TOptions, TMaxDepth>> {
 		const processedFilter = processFilterAndSort(filter)

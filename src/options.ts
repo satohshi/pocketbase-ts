@@ -1,6 +1,7 @@
-import type { FilterHelper } from './filter.js'
-import type { RelParser } from './relation.js'
-import type { SchemaDeclaration } from '../schema.js'
+import type { SortBy } from './lib/filter-sort-helper/sort.js'
+import type { SchemaParser } from './lib/schema-parer/schema-parser.js'
+import type { FilterHelpers } from './lib/filter-sort-helper/filter.js'
+import type { SchemaDeclaration } from './schema.js'
 
 type WithEllipsis = '' | `${',' | ', '}${boolean}`
 
@@ -26,16 +27,22 @@ export type Options<
 		/** Array of relations to include in the response. */
 		expand?: Array<Expand<TSchema, Key>>
 	} & {
-		subscribe: { filter?: string | FilterHelper<TSchema, Key, TMaxDepth, true> }
+		subscribe: {
+			filter?: string | ((helpers: FilterHelpers<TSchema, Key, TMaxDepth>) => string)
+		}
 		list: {
 			sort?:
 				| '@random'
 				| '@rowid'
 				| `${'' | '-'}${keyof TSchema[Key]['type'] & string}`
 				| (string & {})
-				| FilterHelper<TSchema, Key, TMaxDepth, false>
+				| ((helpers: {
+						/** @deprecated */
+						$: FilterHelpers<TSchema, Key, TMaxDepth>['$']
+						sortBy: SortBy<TSchema, Key, TMaxDepth>
+				  }) => string)
 
-			filter?: string | FilterHelper<TSchema, Key, TMaxDepth, true>
+			filter?: string | ((helpers: FilterHelpers<TSchema, Key, TMaxDepth>) => string)
 			page?: number
 			perPage?: number
 			skipTotal?: boolean
@@ -47,7 +54,7 @@ export type Options<
 export type Expand<
 	TSchema extends SchemaDeclaration,
 	TTableName extends keyof TSchema,
-	_Relations extends Record<keyof TSchema, any> = RelParser<TSchema>,
+	_Relations extends Record<keyof TSchema, any> = SchemaParser<TSchema>,
 > = {
 	[Key in keyof _Relations[TTableName]]: {
 		/** Key of the relation to expand (column name or back-relation) */

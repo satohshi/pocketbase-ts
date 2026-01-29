@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { processOptions } from './option-parser.js'
-
+import { checkHasFieldsSpecified, processOptions } from './option-parser.js'
 import type { Options } from './option-parser.js'
 
 describe('processOptions', () => {
@@ -108,5 +107,47 @@ describe('processOptions', () => {
 		}
 		const expected = { sort: 'field1,field2' }
 		expect(processOptions(option)).toEqual(expected)
+	})
+})
+
+describe('checkHasFields', () => {
+	it('returns false for null and non-objects', () => {
+		expect(checkHasFieldsSpecified(null)).toBe(false)
+		expect(checkHasFieldsSpecified(123)).toBe(false)
+		expect(checkHasFieldsSpecified('str')).toBe(false)
+		expect(checkHasFieldsSpecified(undefined)).toBe(false)
+	})
+
+	it('returns false for empty objects and arrays without fields', () => {
+		expect(checkHasFieldsSpecified({})).toBe(false)
+		expect(checkHasFieldsSpecified([])).toBe(false)
+		expect(checkHasFieldsSpecified([1, 2, 3])).toBe(false)
+	})
+
+	it('detects top-level fields key', () => {
+		expect(checkHasFieldsSpecified({ fields: ['id'] })).toBe(true)
+	})
+
+	it('detects fields key inside expand array', () => {
+		expect(checkHasFieldsSpecified({ expand: [{ key: 'foo' }] })).toBe(false)
+		expect(checkHasFieldsSpecified({ expand: [{ key: 'foo', fields: ['id'] }] })).toBe(true)
+	})
+
+	it('detects fields key inside deeply nested expand array', () => {
+		expect(
+			checkHasFieldsSpecified({
+				expand: [{ key: 'foo', expand: [{ key: 'bar', expand: [{ key: 'baz' }] }] }],
+			})
+		).toBe(false)
+		expect(
+			checkHasFieldsSpecified({
+				expand: [
+					{
+						key: 'foo',
+						expand: [{ key: 'bar', expand: [{ key: 'baz', fields: ['id'] }] }],
+					},
+				],
+			})
+		).toBe(true)
 	})
 })
