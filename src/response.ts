@@ -36,7 +36,7 @@ type ProcessExpandArray<
 			}
 		: unknown
 
-type HandleArray<T, IsArray extends boolean> = IsArray extends true ? Array<T> : T
+type HandleArray<T, IsArray extends boolean> = IsArray extends true ? [T, ...T[]] : T
 
 type ProcessSingleExpand<
 	TSchema extends SchemaDeclaration,
