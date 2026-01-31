@@ -7,7 +7,7 @@ import type { SchemaDeclaration } from './schema.js'
 
 export class PocketBaseTS<
 	TSchema extends SchemaDeclaration,
-	TMaxDepth extends 0 | 1 | 2 | 3 | 4 | 5 | 6 = 2,
+	TMaxDepth extends 0 | 1 | 2 | 3 | 4 | 5 | 6 = 1,
 > extends PocketBase {
 	#recordServices: { [K in keyof TSchema]?: RecordServiceTS<TSchema, K, TMaxDepth> } = {}
 

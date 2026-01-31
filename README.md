@@ -348,7 +348,7 @@ const result = await pb.collection('posts').getFullList({
 While PocketBase supports expanding relations up to 6 levels deep, the number of fields increases exponentially with each level.  
 The performance hit was very noticeable when I tried to set it to 6 even with the simple schema in the example above.
 
-As such, I've set the default maximum depth for these helpers to 2.
+As such, I've set the default maximum depth for these helpers to 1.
 
 However, should you wish to expand further, you can adjust the maximum depth by passing it as the second type argument when instantiating the SDK.
 
