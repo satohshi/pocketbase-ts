@@ -99,14 +99,10 @@ type Schema = {
 	}
 }
 
-type Prettify<T> = {
-	[K in keyof T]: Prettify<T[K]>
-} & {}
-
 describe('PBResponseType', () => {
 	type BaseOption = Options<Schema, 'base', 2, 'list'>
-	// .branded made some tests pass that actually should fail, so using Prettify instead
-	type Response<T extends BaseOption> = Prettify<PBResponseType<Schema, 'base', T, 2>>
+	type Response<T extends BaseOption> = PBResponseType<Schema, 'base', T, 2>
+	type GetMinLength<T extends any[]> = Exclude<keyof [unknown, ...T], keyof T>
 
 	describe('top level', () => {
 		it('returns type as is if no option is passed', async () => {
@@ -137,15 +133,15 @@ describe('PBResponseType', () => {
 		describe('expand', () => {
 			it('types single required to-one expand', async () => {
 				const option = { expand: [{ key: 'toOneRequired1' }] } as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<BaseCollection & { expand: { toOneRequired1: ToOneRequired } }>
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & { expand: { toOneRequired1: ToOneRequired } }
 				>()
 			})
 
 			it('types single optional to-one expand', async () => {
 				const option = { expand: [{ key: 'toOneOptional1' }] } as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<BaseCollection & { expand: { toOneOptional1?: ToOneOptional } }>
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & { expand: { toOneOptional1?: ToOneOptional } }
 				>()
 			})
 
@@ -153,12 +149,15 @@ describe('PBResponseType', () => {
 				const option = {
 					expand: [{ key: 'toManyRequired1' }],
 				} as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: { toManyRequired1: [ToManyRequired, ...ToManyRequired[]] }
-						}
-					>
+
+				expectTypeOf<
+					GetMinLength<Response<typeof option>['expand']['toManyRequired1']>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: { toManyRequired1: [ToManyRequired, ...ToManyRequired[]] }
+					}
 				>()
 			})
 
@@ -166,12 +165,15 @@ describe('PBResponseType', () => {
 				const option = {
 					expand: [{ key: 'toManyOptional1' }],
 				} as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: { toManyOptional1?: [ToManyOptional, ...ToManyOptional[]] }
-						}
-					>
+
+				expectTypeOf<
+					GetMinLength<NonNullable<Response<typeof option>['expand']['toManyOptional1']>>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: { toManyOptional1?: [ToManyOptional, ...ToManyOptional[]] }
+					}
 				>()
 			})
 
@@ -179,15 +181,14 @@ describe('PBResponseType', () => {
 				const option = {
 					expand: [{ key: 'toOneRequired1' }, { key: 'toOneRequired2' }],
 				} as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneRequired1: ToOneRequired
-								toOneRequired2: ToOneRequired
-							}
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneRequired1: ToOneRequired
+							toOneRequired2: ToOneRequired
 						}
-					>
+					}
 				>()
 			})
 
@@ -195,15 +196,13 @@ describe('PBResponseType', () => {
 				const option = {
 					expand: [{ key: 'toOneRequired1' }, { key: 'toOneOptional1' }],
 				} as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneRequired1: ToOneRequired
-								toOneOptional1?: ToOneOptional
-							}
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneRequired1: ToOneRequired
+							toOneOptional1?: ToOneOptional
 						}
-					>
+					}
 				>()
 			})
 
@@ -211,15 +210,13 @@ describe('PBResponseType', () => {
 				const option = {
 					expand: [{ key: 'toOneOptional1' }, { key: 'toOneOptional2' }],
 				} as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneOptional1?: ToOneOptional
-								toOneOptional2?: ToOneOptional
-							}
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneOptional1?: ToOneOptional
+							toOneOptional2?: ToOneOptional
 						}
-					>
+					}
 				>()
 			})
 
@@ -227,15 +224,21 @@ describe('PBResponseType', () => {
 				const option = {
 					expand: [{ key: 'toManyRequired1' }, { key: 'toManyRequired2' }],
 				} as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
-								toManyRequired2: [ToManyRequired, ...ToManyRequired[]]
-							}
+
+				expectTypeOf<
+					GetMinLength<Response<typeof option>['expand']['toManyRequired1']>
+				>().toEqualTypeOf<'1'>()
+				expectTypeOf<
+					GetMinLength<Response<typeof option>['expand']['toManyRequired2']>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
+							toManyRequired2: [ToManyRequired, ...ToManyRequired[]]
 						}
-					>
+					}
 				>()
 			})
 
@@ -243,15 +246,21 @@ describe('PBResponseType', () => {
 				const option = {
 					expand: [{ key: 'toManyRequired1' }, { key: 'toManyOptional1' }],
 				} as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
-								toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
-							}
+
+				expectTypeOf<
+					GetMinLength<Response<typeof option>['expand']['toManyRequired1']>
+				>().toEqualTypeOf<'1'>()
+				expectTypeOf<
+					GetMinLength<NonNullable<Response<typeof option>['expand']['toManyOptional1']>>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
+							toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
 						}
-					>
+					}
 				>()
 			})
 
@@ -259,15 +268,21 @@ describe('PBResponseType', () => {
 				const option = {
 					expand: [{ key: 'toManyOptional1' }, { key: 'toManyOptional2' }],
 				} as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
-								toManyOptional2?: [ToManyOptional, ...ToManyOptional[]]
-							}
+
+				expectTypeOf<
+					GetMinLength<NonNullable<Response<typeof option>['expand']['toManyOptional1']>>
+				>().toEqualTypeOf<'1'>()
+				expectTypeOf<
+					GetMinLength<NonNullable<Response<typeof option>['expand']['toManyOptional2']>>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
+							toManyOptional2?: [ToManyOptional, ...ToManyOptional[]]
 						}
-					>
+					}
 				>()
 			})
 
@@ -275,15 +290,18 @@ describe('PBResponseType', () => {
 				const option = {
 					expand: [{ key: 'toOneRequired1' }, { key: 'toManyRequired1' }],
 				} as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneRequired1: ToOneRequired
-								toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
-							}
+
+				expectTypeOf<
+					GetMinLength<Response<typeof option>['expand']['toManyRequired1']>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneRequired1: ToOneRequired
+							toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
 						}
-					>
+					}
 				>()
 			})
 
@@ -291,15 +309,18 @@ describe('PBResponseType', () => {
 				const option = {
 					expand: [{ key: 'toOneRequired1' }, { key: 'toManyOptional1' }],
 				} as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneRequired1: ToOneRequired
-								toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
-							}
+
+				expectTypeOf<
+					GetMinLength<NonNullable<Response<typeof option>['expand']['toManyOptional1']>>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneRequired1: ToOneRequired
+							toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
 						}
-					>
+					}
 				>()
 			})
 
@@ -307,15 +328,18 @@ describe('PBResponseType', () => {
 				const option = {
 					expand: [{ key: 'toOneOptional1' }, { key: 'toManyRequired1' }],
 				} as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneOptional1?: ToOneOptional
-								toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
-							}
+
+				expectTypeOf<
+					GetMinLength<Response<typeof option>['expand']['toManyRequired1']>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneOptional1?: ToOneOptional
+							toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
 						}
-					>
+					}
 				>()
 			})
 
@@ -323,15 +347,18 @@ describe('PBResponseType', () => {
 				const option = {
 					expand: [{ key: 'toOneOptional1' }, { key: 'toManyOptional1' }],
 				} as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneOptional1?: ToOneOptional
-								toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
-							}
+
+				expectTypeOf<
+					GetMinLength<NonNullable<Response<typeof option>['expand']['toManyOptional1']>>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneOptional1?: ToOneOptional
+							toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
 						}
-					>
+					}
 				>()
 			})
 		})
@@ -342,8 +369,8 @@ describe('PBResponseType', () => {
 			const option = {
 				expand: [{ key: 'toOneRequired1' }],
 			} as const satisfies BaseOption
-			expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-				Prettify<BaseCollection & { expand: { toOneRequired1: ToOneRequired } }>
+			expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+				BaseCollection & { expand: { toOneRequired1: ToOneRequired } }
 			>()
 		})
 
@@ -352,12 +379,10 @@ describe('PBResponseType', () => {
 				const option = {
 					expand: [{ key: 'toOneRequired1', fields: ['id', 'name'] }],
 				} as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: { toOneRequired1: Pick<ToOneRequired, 'id' | 'name'> }
-						}
-					>
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: { toOneRequired1: Pick<ToOneRequired, 'id' | 'name'> }
+					}
 				>()
 			})
 
@@ -379,16 +404,14 @@ describe('PBResponseType', () => {
 				const option = {
 					expand: [{ key: 'toOneRequired1', expand: [{ key: 'toOneRequired1' }] }],
 				} as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneRequired1: ToOneRequired & {
-									expand: { toOneRequired1: ToOneRequired }
-								}
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneRequired1: ToOneRequired & {
+								expand: { toOneRequired1: ToOneRequired }
 							}
 						}
-					>
+					}
 				>()
 			})
 
@@ -396,16 +419,14 @@ describe('PBResponseType', () => {
 				const option = {
 					expand: [{ key: 'toOneRequired1', expand: [{ key: 'toOneOptional1' }] }],
 				} as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneRequired1: ToOneRequired & {
-									expand: { toOneOptional1?: ToOneOptional }
-								}
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneRequired1: ToOneRequired & {
+								expand: { toOneOptional1?: ToOneOptional }
 							}
 						}
-					>
+					}
 				>()
 			})
 
@@ -413,18 +434,25 @@ describe('PBResponseType', () => {
 				const option = {
 					expand: [{ key: 'toOneRequired1', expand: [{ key: 'toManyRequired1' }] }],
 				} as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneRequired1: ToOneRequired & {
-									expand: {
-										toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
-									}
+
+				expectTypeOf<
+					GetMinLength<
+						Response<
+							typeof option
+						>['expand']['toOneRequired1']['expand']['toManyRequired1']
+					>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneRequired1: ToOneRequired & {
+								expand: {
+									toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
 								}
 							}
 						}
-					>
+					}
 				>()
 			})
 
@@ -432,18 +460,27 @@ describe('PBResponseType', () => {
 				const option = {
 					expand: [{ key: 'toOneRequired1', expand: [{ key: 'toManyOptional1' }] }],
 				} as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneRequired1: ToOneRequired & {
-									expand: {
-										toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
-									}
+
+				expectTypeOf<
+					GetMinLength<
+						NonNullable<
+							Response<
+								typeof option
+							>['expand']['toOneRequired1']['expand']['toManyOptional1']
+						>
+					>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneRequired1: ToOneRequired & {
+								expand: {
+									toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
 								}
 							}
 						}
-					>
+					}
 				>()
 			})
 
@@ -456,19 +493,18 @@ describe('PBResponseType', () => {
 						},
 					],
 				} as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneRequired1: ToOneRequired & {
-									expand: {
-										toOneRequired1: ToOneRequired
-										toOneRequired2: ToOneRequired
-									}
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneRequired1: ToOneRequired & {
+								expand: {
+									toOneRequired1: ToOneRequired
+									toOneRequired2: ToOneRequired
 								}
 							}
 						}
-					>
+					}
 				>()
 			})
 
@@ -482,19 +518,17 @@ describe('PBResponseType', () => {
 					],
 				} as const satisfies BaseOption
 
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneRequired1: ToOneRequired & {
-									expand: {
-										toOneRequired1: ToOneRequired
-										toOneOptional1?: ToOneOptional
-									}
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneRequired1: ToOneRequired & {
+								expand: {
+									toOneRequired1: ToOneRequired
+									toOneOptional1?: ToOneOptional
 								}
 							}
 						}
-					>
+					}
 				>()
 			})
 
@@ -508,19 +542,17 @@ describe('PBResponseType', () => {
 					],
 				} as const satisfies BaseOption
 
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneRequired1: ToOneRequired & {
-									expand: {
-										toOneOptional1?: ToOneOptional
-										toOneOptional2?: ToOneOptional
-									}
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneRequired1: ToOneRequired & {
+								expand: {
+									toOneOptional1?: ToOneOptional
+									toOneOptional2?: ToOneOptional
 								}
 							}
 						}
-					>
+					}
 				>()
 			})
 
@@ -534,19 +566,32 @@ describe('PBResponseType', () => {
 					],
 				} as const satisfies BaseOption
 
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneRequired1: ToOneRequired & {
-									expand: {
-										toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
-										toManyRequired2: [ToManyRequired, ...ToManyRequired[]]
-									}
+				expectTypeOf<
+					GetMinLength<
+						Response<
+							typeof option
+						>['expand']['toOneRequired1']['expand']['toManyRequired1']
+					>
+				>().toEqualTypeOf<'1'>()
+				expectTypeOf<
+					GetMinLength<
+						Response<
+							typeof option
+						>['expand']['toOneRequired1']['expand']['toManyRequired2']
+					>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneRequired1: ToOneRequired & {
+								expand: {
+									toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
+									toManyRequired2: [ToManyRequired, ...ToManyRequired[]]
 								}
 							}
 						}
-					>
+					}
 				>()
 			})
 
@@ -560,19 +605,34 @@ describe('PBResponseType', () => {
 					],
 				} as const satisfies BaseOption
 
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneRequired1: ToOneRequired & {
-									expand: {
-										toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
-										toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
-									}
+				expectTypeOf<
+					GetMinLength<
+						Response<
+							typeof option
+						>['expand']['toOneRequired1']['expand']['toManyRequired1']
+					>
+				>().toEqualTypeOf<'1'>()
+				expectTypeOf<
+					GetMinLength<
+						NonNullable<
+							Response<
+								typeof option
+							>['expand']['toOneRequired1']['expand']['toManyOptional1']
+						>
+					>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneRequired1: ToOneRequired & {
+								expand: {
+									toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
+									toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
 								}
 							}
 						}
-					>
+					}
 				>()
 			})
 
@@ -586,19 +646,36 @@ describe('PBResponseType', () => {
 					],
 				} as const satisfies BaseOption
 
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneRequired1: ToOneRequired & {
-									expand: {
-										toManyOptional2?: [ToManyOptional, ...ToManyOptional[]]
-										toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
-									}
+				expectTypeOf<
+					GetMinLength<
+						NonNullable<
+							Response<
+								typeof option
+							>['expand']['toOneRequired1']['expand']['toManyOptional1']
+						>
+					>
+				>().toEqualTypeOf<'1'>()
+				expectTypeOf<
+					GetMinLength<
+						NonNullable<
+							Response<
+								typeof option
+							>['expand']['toOneRequired1']['expand']['toManyOptional2']
+						>
+					>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneRequired1: ToOneRequired & {
+								expand: {
+									toManyOptional2?: [ToManyOptional, ...ToManyOptional[]]
+									toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
 								}
 							}
 						}
-					>
+					}
 				>()
 			})
 
@@ -612,19 +689,25 @@ describe('PBResponseType', () => {
 					],
 				} as const satisfies BaseOption
 
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneRequired1: ToOneRequired & {
-									expand: {
-										toOneRequired1: ToOneRequired
-										toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
-									}
+				expectTypeOf<
+					GetMinLength<
+						Response<
+							typeof option
+						>['expand']['toOneRequired1']['expand']['toManyRequired1']
+					>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneRequired1: ToOneRequired & {
+								expand: {
+									toOneRequired1: ToOneRequired
+									toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
 								}
 							}
 						}
-					>
+					}
 				>()
 			})
 
@@ -638,19 +721,27 @@ describe('PBResponseType', () => {
 					],
 				} as const satisfies BaseOption
 
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneRequired1: ToOneRequired & {
-									expand: {
-										toOneRequired1: ToOneRequired
-										toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
-									}
+				expectTypeOf<
+					GetMinLength<
+						NonNullable<
+							Response<
+								typeof option
+							>['expand']['toOneRequired1']['expand']['toManyOptional1']
+						>
+					>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneRequired1: ToOneRequired & {
+								expand: {
+									toOneRequired1: ToOneRequired
+									toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
 								}
 							}
 						}
-					>
+					}
 				>()
 			})
 
@@ -664,19 +755,25 @@ describe('PBResponseType', () => {
 					],
 				} as const satisfies BaseOption
 
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneRequired1: ToOneRequired & {
-									expand: {
-										toOneOptional1?: ToOneOptional
-										toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
-									}
+				expectTypeOf<
+					GetMinLength<
+						Response<
+							typeof option
+						>['expand']['toOneRequired1']['expand']['toManyRequired1']
+					>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneRequired1: ToOneRequired & {
+								expand: {
+									toOneOptional1?: ToOneOptional
+									toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
 								}
 							}
 						}
-					>
+					}
 				>()
 			})
 
@@ -690,19 +787,27 @@ describe('PBResponseType', () => {
 					],
 				} as const satisfies BaseOption
 
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneRequired1: ToOneRequired & {
-									expand: {
-										toOneOptional1?: ToOneOptional
-										toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
-									}
+				expectTypeOf<
+					GetMinLength<
+						NonNullable<
+							Response<
+								typeof option
+							>['expand']['toOneRequired1']['expand']['toManyOptional1']
+						>
+					>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneRequired1: ToOneRequired & {
+								expand: {
+									toOneOptional1?: ToOneOptional
+									toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
 								}
 							}
 						}
-					>
+					}
 				>()
 			})
 		})
@@ -713,8 +818,8 @@ describe('PBResponseType', () => {
 			const option = {
 				expand: [{ key: 'toOneOptional1' }],
 			} as const satisfies BaseOption
-			expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-				Prettify<BaseCollection & { expand: { toOneOptional1?: ToOneOptional } }>
+			expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+				BaseCollection & { expand: { toOneOptional1?: ToOneOptional } }
 			>()
 		})
 
@@ -723,14 +828,12 @@ describe('PBResponseType', () => {
 				const option = {
 					expand: [{ key: 'toOneOptional1', fields: ['id', 'name'] }],
 				} as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneOptional1?: Pick<ToOneOptional, 'id' | 'name'>
-							}
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneOptional1?: Pick<ToOneOptional, 'id' | 'name'>
 						}
-					>
+					}
 				>()
 			})
 
@@ -752,16 +855,14 @@ describe('PBResponseType', () => {
 				const option = {
 					expand: [{ key: 'toOneOptional1', expand: [{ key: 'toOneRequired1' }] }],
 				} as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneOptional1?: ToOneOptional & {
-									expand: { toOneRequired1: ToOneRequired }
-								}
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneOptional1?: ToOneOptional & {
+								expand: { toOneRequired1: ToOneRequired }
 							}
 						}
-					>
+					}
 				>()
 			})
 
@@ -769,16 +870,14 @@ describe('PBResponseType', () => {
 				const option = {
 					expand: [{ key: 'toOneOptional1', expand: [{ key: 'toOneOptional1' }] }],
 				} as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneOptional1?: ToOneOptional & {
-									expand: { toOneOptional1?: ToOneOptional }
-								}
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneOptional1?: ToOneOptional & {
+								expand: { toOneOptional1?: ToOneOptional }
 							}
 						}
-					>
+					}
 				>()
 			})
 
@@ -786,18 +885,25 @@ describe('PBResponseType', () => {
 				const option = {
 					expand: [{ key: 'toOneOptional1', expand: [{ key: 'toManyRequired1' }] }],
 				} as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneOptional1?: ToOneOptional & {
-									expand: {
-										toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
-									}
+
+				expectTypeOf<
+					GetMinLength<
+						NonNullable<
+							Response<typeof option>['expand']['toOneOptional1']
+						>['expand']['toManyRequired1']
+					>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneOptional1?: ToOneOptional & {
+								expand: {
+									toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
 								}
 							}
 						}
-					>
+					}
 				>()
 			})
 
@@ -805,18 +911,27 @@ describe('PBResponseType', () => {
 				const option = {
 					expand: [{ key: 'toOneOptional1', expand: [{ key: 'toManyOptional1' }] }],
 				} as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneOptional1?: ToOneOptional & {
-									expand: {
-										toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
-									}
+
+				expectTypeOf<
+					GetMinLength<
+						NonNullable<
+							NonNullable<
+								Response<typeof option>['expand']['toOneOptional1']
+							>['expand']['toManyOptional1']
+						>
+					>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneOptional1?: ToOneOptional & {
+								expand: {
+									toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
 								}
 							}
 						}
-					>
+					}
 				>()
 			})
 
@@ -829,19 +944,17 @@ describe('PBResponseType', () => {
 						},
 					],
 				} as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneOptional1?: ToOneOptional & {
-									expand: {
-										toOneRequired1: ToOneRequired
-										toOneRequired2: ToOneRequired
-									}
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneOptional1?: ToOneOptional & {
+								expand: {
+									toOneRequired1: ToOneRequired
+									toOneRequired2: ToOneRequired
 								}
 							}
 						}
-					>
+					}
 				>()
 			})
 
@@ -855,19 +968,17 @@ describe('PBResponseType', () => {
 					],
 				} as const satisfies BaseOption
 
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneOptional1?: ToOneOptional & {
-									expand: {
-										toOneRequired1: ToOneRequired
-										toOneOptional1?: ToOneOptional
-									}
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneOptional1?: ToOneOptional & {
+								expand: {
+									toOneRequired1: ToOneRequired
+									toOneOptional1?: ToOneOptional
 								}
 							}
 						}
-					>
+					}
 				>()
 			})
 
@@ -881,19 +992,17 @@ describe('PBResponseType', () => {
 					],
 				} as const satisfies BaseOption
 
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneOptional1?: ToOneOptional & {
-									expand: {
-										toOneOptional1?: ToOneOptional
-										toOneOptional2?: ToOneOptional
-									}
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneOptional1?: ToOneOptional & {
+								expand: {
+									toOneOptional1?: ToOneOptional
+									toOneOptional2?: ToOneOptional
 								}
 							}
 						}
-					>
+					}
 				>()
 			})
 
@@ -907,19 +1016,32 @@ describe('PBResponseType', () => {
 					],
 				} as const satisfies BaseOption
 
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneOptional1?: ToOneOptional & {
-									expand: {
-										toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
-										toManyRequired2: [ToManyRequired, ...ToManyRequired[]]
-									}
+				expectTypeOf<
+					GetMinLength<
+						NonNullable<
+							Response<typeof option>['expand']['toOneOptional1']
+						>['expand']['toManyRequired1']
+					>
+				>().toEqualTypeOf<'1'>()
+				expectTypeOf<
+					GetMinLength<
+						NonNullable<
+							Response<typeof option>['expand']['toOneOptional1']
+						>['expand']['toManyRequired2']
+					>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneOptional1?: ToOneOptional & {
+								expand: {
+									toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
+									toManyRequired2: [ToManyRequired, ...ToManyRequired[]]
 								}
 							}
 						}
-					>
+					}
 				>()
 			})
 
@@ -933,19 +1055,34 @@ describe('PBResponseType', () => {
 					],
 				} as const satisfies BaseOption
 
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneOptional1?: ToOneOptional & {
-									expand: {
-										toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
-										toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
-									}
+				expectTypeOf<
+					GetMinLength<
+						NonNullable<
+							Response<typeof option>['expand']['toOneOptional1']
+						>['expand']['toManyRequired1']
+					>
+				>().toEqualTypeOf<'1'>()
+				expectTypeOf<
+					GetMinLength<
+						NonNullable<
+							NonNullable<
+								Response<typeof option>['expand']['toOneOptional1']
+							>['expand']['toManyOptional1']
+						>
+					>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneOptional1?: ToOneOptional & {
+								expand: {
+									toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
+									toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
 								}
 							}
 						}
-					>
+					}
 				>()
 			})
 
@@ -959,19 +1096,36 @@ describe('PBResponseType', () => {
 					],
 				} as const satisfies BaseOption
 
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneOptional1?: ToOneOptional & {
-									expand: {
-										toManyOptional2?: [ToManyOptional, ...ToManyOptional[]]
-										toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
-									}
+				expectTypeOf<
+					GetMinLength<
+						NonNullable<
+							NonNullable<
+								Response<typeof option>['expand']['toOneOptional1']
+							>['expand']['toManyOptional1']
+						>
+					>
+				>().toEqualTypeOf<'1'>()
+				expectTypeOf<
+					GetMinLength<
+						NonNullable<
+							NonNullable<
+								Response<typeof option>['expand']['toOneOptional1']
+							>['expand']['toManyOptional2']
+						>
+					>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneOptional1?: ToOneOptional & {
+								expand: {
+									toManyOptional2?: [ToManyOptional, ...ToManyOptional[]]
+									toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
 								}
 							}
 						}
-					>
+					}
 				>()
 			})
 
@@ -985,19 +1139,25 @@ describe('PBResponseType', () => {
 					],
 				} as const satisfies BaseOption
 
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneOptional1?: ToOneOptional & {
-									expand: {
-										toOneRequired1: ToOneRequired
-										toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
-									}
+				expectTypeOf<
+					GetMinLength<
+						NonNullable<
+							Response<typeof option>['expand']['toOneOptional1']
+						>['expand']['toManyRequired1']
+					>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneOptional1?: ToOneOptional & {
+								expand: {
+									toOneRequired1: ToOneRequired
+									toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
 								}
 							}
 						}
-					>
+					}
 				>()
 			})
 
@@ -1011,19 +1171,27 @@ describe('PBResponseType', () => {
 					],
 				} as const satisfies BaseOption
 
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneOptional1?: ToOneOptional & {
-									expand: {
-										toOneRequired1: ToOneRequired
-										toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
-									}
+				expectTypeOf<
+					GetMinLength<
+						NonNullable<
+							NonNullable<
+								Response<typeof option>['expand']['toOneOptional1']
+							>['expand']['toManyOptional1']
+						>
+					>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneOptional1?: ToOneOptional & {
+								expand: {
+									toOneRequired1: ToOneRequired
+									toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
 								}
 							}
 						}
-					>
+					}
 				>()
 			})
 
@@ -1037,19 +1205,25 @@ describe('PBResponseType', () => {
 					],
 				} as const satisfies BaseOption
 
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneOptional1?: ToOneOptional & {
-									expand: {
-										toOneOptional1?: ToOneOptional
-										toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
-									}
+				expectTypeOf<
+					GetMinLength<
+						NonNullable<
+							Response<typeof option>['expand']['toOneOptional1']
+						>['expand']['toManyRequired1']
+					>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneOptional1?: ToOneOptional & {
+								expand: {
+									toOneOptional1?: ToOneOptional
+									toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
 								}
 							}
 						}
-					>
+					}
 				>()
 			})
 
@@ -1063,19 +1237,27 @@ describe('PBResponseType', () => {
 					],
 				} as const satisfies BaseOption
 
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toOneOptional1?: ToOneOptional & {
-									expand: {
-										toOneOptional1?: ToOneOptional
-										toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
-									}
+				expectTypeOf<
+					GetMinLength<
+						NonNullable<
+							NonNullable<
+								Response<typeof option>['expand']['toOneOptional1']
+							>['expand']['toManyOptional1']
+						>
+					>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toOneOptional1?: ToOneOptional & {
+								expand: {
+									toOneOptional1?: ToOneOptional
+									toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
 								}
 							}
 						}
-					>
+					}
 				>()
 			})
 		})
@@ -1086,14 +1268,17 @@ describe('PBResponseType', () => {
 			const option = {
 				expand: [{ key: 'toManyRequired1' }],
 			} as const satisfies BaseOption
-			expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-				Prettify<
-					BaseCollection & {
-						expand: {
-							toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
-						}
+
+			expectTypeOf<
+				GetMinLength<Response<typeof option>['expand']['toManyRequired1']>
+			>().toEqualTypeOf<'1'>()
+
+			expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+				BaseCollection & {
+					expand: {
+						toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
 					}
-				>
+				}
 			>()
 		})
 
@@ -1102,17 +1287,20 @@ describe('PBResponseType', () => {
 				const option = {
 					expand: [{ key: 'toManyRequired1', fields: ['id', 'name'] }],
 				} as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toManyRequired1: [
-									Pick<ToManyRequired, 'id' | 'name'>,
-									...Pick<ToManyRequired, 'id' | 'name'>[],
-								]
-							}
+
+				expectTypeOf<
+					GetMinLength<Response<typeof option>['expand']['toManyRequired1']>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toManyRequired1: [
+								Pick<ToManyRequired, 'id' | 'name'>,
+								...Pick<ToManyRequired, 'id' | 'name'>[],
+							]
 						}
-					>
+					}
 				>()
 			})
 
@@ -1139,6 +1327,11 @@ describe('PBResponseType', () => {
 						},
 					],
 				} as const satisfies BaseOption
+
+				expectTypeOf<
+					GetMinLength<Response<typeof option>['expand']['toManyRequired1']>
+				>().toEqualTypeOf<'1'>()
+
 				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
 					BaseCollection & {
 						expand: {
@@ -1164,6 +1357,11 @@ describe('PBResponseType', () => {
 						},
 					],
 				} as const satisfies BaseOption
+
+				expectTypeOf<
+					GetMinLength<Response<typeof option>['expand']['toManyRequired1']>
+				>().toEqualTypeOf<'1'>()
+
 				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
 					BaseCollection & {
 						expand: {
@@ -1189,6 +1387,11 @@ describe('PBResponseType', () => {
 						},
 					],
 				} as const satisfies BaseOption
+
+				expectTypeOf<
+					GetMinLength<Response<typeof option>['expand']['toManyRequired1']>
+				>().toEqualTypeOf<'1'>()
+
 				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
 					BaseCollection & {
 						expand: {
@@ -1218,13 +1421,18 @@ describe('PBResponseType', () => {
 						},
 					],
 				} as const satisfies BaseOption
+
+				expectTypeOf<
+					GetMinLength<Response<typeof option>['expand']['toManyRequired1']>
+				>().toEqualTypeOf<'1'>()
+
 				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
 					BaseCollection & {
 						expand: {
 							toManyRequired1: [
 								ToManyRequired & {
 									expand: {
-										toManyOptional1?: [ToManyOptional, ...ToManyOptional[]] // TODO: I can remove this line and the test still passes??? maybe I should do something about it.
+										toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
 									}
 								},
 								...(ToManyRequired & {
@@ -1247,6 +1455,11 @@ describe('PBResponseType', () => {
 						},
 					],
 				} as const satisfies BaseOption
+
+				expectTypeOf<
+					GetMinLength<Response<typeof option>['expand']['toManyRequired1']>
+				>().toEqualTypeOf<'1'>()
+
 				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
 					BaseCollection & {
 						expand: {
@@ -1278,6 +1491,10 @@ describe('PBResponseType', () => {
 						},
 					],
 				} as const satisfies BaseOption
+
+				expectTypeOf<
+					GetMinLength<Response<typeof option>['expand']['toManyRequired1']>
+				>().toEqualTypeOf<'1'>()
 
 				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
 					BaseCollection & {
@@ -1311,6 +1528,10 @@ describe('PBResponseType', () => {
 					],
 				} as const satisfies BaseOption
 
+				expectTypeOf<
+					GetMinLength<Response<typeof option>['expand']['toManyRequired1']>
+				>().toEqualTypeOf<'1'>()
+
 				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
 					BaseCollection & {
 						expand: {
@@ -1342,6 +1563,10 @@ describe('PBResponseType', () => {
 						},
 					],
 				} as const satisfies BaseOption
+
+				expectTypeOf<
+					GetMinLength<Response<typeof option>['expand']['toManyRequired1']>
+				>().toEqualTypeOf<'1'>()
 
 				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
 					BaseCollection & {
@@ -1375,6 +1600,10 @@ describe('PBResponseType', () => {
 					],
 				} as const satisfies BaseOption
 
+				expectTypeOf<
+					GetMinLength<Response<typeof option>['expand']['toManyRequired1']>
+				>().toEqualTypeOf<'1'>()
+
 				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
 					BaseCollection & {
 						expand: {
@@ -1406,6 +1635,10 @@ describe('PBResponseType', () => {
 						},
 					],
 				} as const satisfies BaseOption
+
+				expectTypeOf<
+					GetMinLength<NonNullable<Response<typeof option>['expand']['toManyRequired1']>>
+				>().toEqualTypeOf<'1'>()
 
 				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
 					BaseCollection & {
@@ -1439,6 +1672,10 @@ describe('PBResponseType', () => {
 					],
 				} as const satisfies BaseOption
 
+				expectTypeOf<
+					GetMinLength<Response<typeof option>['expand']['toManyRequired1']>
+				>().toEqualTypeOf<'1'>()
+
 				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
 					BaseCollection & {
 						expand: {
@@ -1470,6 +1707,10 @@ describe('PBResponseType', () => {
 						},
 					],
 				} as const satisfies BaseOption
+
+				expectTypeOf<
+					GetMinLength<NonNullable<Response<typeof option>['expand']['toManyRequired1']>>
+				>().toEqualTypeOf<'1'>()
 
 				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
 					BaseCollection & {
@@ -1503,6 +1744,10 @@ describe('PBResponseType', () => {
 					],
 				} as const satisfies BaseOption
 
+				expectTypeOf<
+					GetMinLength<Response<typeof option>['expand']['toManyRequired1']>
+				>().toEqualTypeOf<'1'>()
+
 				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
 					BaseCollection & {
 						expand: {
@@ -1534,6 +1779,10 @@ describe('PBResponseType', () => {
 						},
 					],
 				} as const satisfies BaseOption
+
+				expectTypeOf<
+					GetMinLength<NonNullable<Response<typeof option>['expand']['toManyRequired1']>>
+				>().toEqualTypeOf<'1'>()
 
 				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
 					BaseCollection & {
@@ -1564,14 +1813,17 @@ describe('PBResponseType', () => {
 			const option = {
 				expand: [{ key: 'toManyOptional1' }],
 			} as const satisfies BaseOption
-			expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-				Prettify<
-					BaseCollection & {
-						expand: {
-							toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
-						}
+
+			expectTypeOf<
+				GetMinLength<NonNullable<Response<typeof option>['expand']['toManyOptional1']>>
+			>().toEqualTypeOf<'1'>()
+
+			expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+				BaseCollection & {
+					expand: {
+						toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
 					}
-				>
+				}
 			>()
 		})
 
@@ -1580,17 +1832,20 @@ describe('PBResponseType', () => {
 				const option = {
 					expand: [{ key: 'toManyOptional1', fields: ['id', 'name'] }],
 				} as const satisfies BaseOption
-				expectTypeOf<Response<typeof option>>().toEqualTypeOf<
-					Prettify<
-						BaseCollection & {
-							expand: {
-								toManyOptional1?: [
-									Pick<ToManyOptional, 'id' | 'name'>,
-									...Pick<ToManyOptional, 'id' | 'name'>[],
-								]
-							}
+
+				expectTypeOf<
+					GetMinLength<NonNullable<Response<typeof option>['expand']['toManyOptional1']>>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toManyOptional1?: [
+								Pick<ToManyOptional, 'id' | 'name'>,
+								...Pick<ToManyOptional, 'id' | 'name'>[],
+							]
 						}
-					>
+					}
 				>()
 			})
 
@@ -1606,365 +1861,419 @@ describe('PBResponseType', () => {
 				>()
 			})
 		})
-	})
 
-	describe('expand', () => {
-		it('types single required to-one expand', async () => {
-			const option = {
-				expand: [{ key: 'toManyOptional1', expand: [{ key: 'toOneRequired1' }] }],
-			} as const satisfies BaseOption
+		describe('expand', () => {
+			it('types single required to-one expand', async () => {
+				const option = {
+					expand: [{ key: 'toManyOptional1', expand: [{ key: 'toOneRequired1' }] }],
+				} as const satisfies BaseOption
 
-			expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
-				BaseCollection & {
-					expand: {
-						toManyOptional1?: [
-							ToManyOptional & {
-								expand: { toOneRequired1: ToOneRequired }
-							},
-							...(ToManyOptional & {
-								expand: { toOneRequired1: ToOneRequired }
-							})[],
-						]
+				expectTypeOf<
+					GetMinLength<NonNullable<Response<typeof option>['expand']['toManyOptional1']>>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toManyOptional1?: [
+								ToManyOptional & {
+									expand: { toOneRequired1: ToOneRequired }
+								},
+								...(ToManyOptional & {
+									expand: { toOneRequired1: ToOneRequired }
+								})[],
+							]
+						}
 					}
-				}
-			>()
-		})
+				>()
+			})
 
-		it('types single optional to-one expand', async () => {
-			const option = {
-				expand: [{ key: 'toManyOptional1', expand: [{ key: 'toOneOptional1' }] }],
-			} as const satisfies BaseOption
-			expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
-				BaseCollection & {
-					expand: {
-						toManyOptional1?: [
-							ToManyOptional & {
-								expand: { toOneOptional1?: ToOneOptional }
-							},
-							...(ToManyOptional & {
-								expand: { toOneOptional1?: ToOneOptional }
-							})[],
-						]
+			it('types single optional to-one expand', async () => {
+				const option = {
+					expand: [{ key: 'toManyOptional1', expand: [{ key: 'toOneOptional1' }] }],
+				} as const satisfies BaseOption
+
+				expectTypeOf<
+					GetMinLength<NonNullable<Response<typeof option>['expand']['toManyOptional1']>>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toManyOptional1?: [
+								ToManyOptional & {
+									expand: { toOneOptional1?: ToOneOptional }
+								},
+								...(ToManyOptional & {
+									expand: { toOneOptional1?: ToOneOptional }
+								})[],
+							]
+						}
 					}
-				}
-			>()
-		})
+				>()
+			})
 
-		it('types single required to-many expand', async () => {
-			const option = {
-				expand: [{ key: 'toManyOptional1', expand: [{ key: 'toManyRequired1' }] }],
-			} as const satisfies BaseOption
-			expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
-				BaseCollection & {
-					expand: {
-						toManyOptional1?: [
-							ToManyOptional & {
-								expand: {
-									toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
-								}
-							},
-							...(ToManyOptional & {
-								expand: {
-									toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
-								}
-							})[],
-						]
+			it('types single required to-many expand', async () => {
+				const option = {
+					expand: [{ key: 'toManyOptional1', expand: [{ key: 'toManyRequired1' }] }],
+				} as const satisfies BaseOption
+
+				expectTypeOf<
+					GetMinLength<NonNullable<Response<typeof option>['expand']['toManyOptional1']>>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toManyOptional1?: [
+								ToManyOptional & {
+									expand: {
+										toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
+									}
+								},
+								...(ToManyOptional & {
+									expand: {
+										toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
+									}
+								})[],
+							]
+						}
 					}
-				}
-			>()
-		})
+				>()
+			})
 
-		it('types single optional to-many expand', async () => {
-			const option = {
-				expand: [{ key: 'toManyOptional1', expand: [{ key: 'toManyOptional1' }] }],
-			} as const satisfies BaseOption
-			expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
-				BaseCollection & {
-					expand: {
-						toManyOptional1?: [
-							ToManyOptional & {
-								expand: {
-									toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
-								}
-							},
-							...(ToManyOptional & {
-								expand: {
-									toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
-								}
-							})[],
-						]
+			it('types single optional to-many expand', async () => {
+				const option = {
+					expand: [{ key: 'toManyOptional1', expand: [{ key: 'toManyOptional1' }] }],
+				} as const satisfies BaseOption
+
+				expectTypeOf<
+					GetMinLength<NonNullable<Response<typeof option>['expand']['toManyOptional1']>>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toManyOptional1?: [
+								ToManyOptional & {
+									expand: {
+										toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
+									}
+								},
+								...(ToManyOptional & {
+									expand: {
+										toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
+									}
+								})[],
+							]
+						}
 					}
-				}
-			>()
-		})
+				>()
+			})
 
-		it('types multiple expands (to-one required x2)', async () => {
-			const option = {
-				expand: [
-					{
-						key: 'toManyOptional1',
-						expand: [{ key: 'toOneRequired1' }, { key: 'toOneRequired2' }],
-					},
-				],
-			} as const satisfies BaseOption
-			expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
-				BaseCollection & {
-					expand: {
-						toManyOptional1?: [
-							ToManyOptional & {
-								expand: {
-									toOneRequired1: ToOneRequired
-									toOneRequired2: ToOneRequired
-								}
-							},
-							...(ToManyOptional & {
-								expand: {
-									toOneRequired1: ToOneRequired
-									toOneRequired2: ToOneRequired
-								}
-							})[],
-						]
+			it('types multiple expands (to-one required x2)', async () => {
+				const option = {
+					expand: [
+						{
+							key: 'toManyOptional1',
+							expand: [{ key: 'toOneRequired1' }, { key: 'toOneRequired2' }],
+						},
+					],
+				} as const satisfies BaseOption
+
+				expectTypeOf<
+					GetMinLength<NonNullable<Response<typeof option>['expand']['toManyOptional1']>>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toManyOptional1?: [
+								ToManyOptional & {
+									expand: {
+										toOneRequired1: ToOneRequired
+										toOneRequired2: ToOneRequired
+									}
+								},
+								...(ToManyOptional & {
+									expand: {
+										toOneRequired1: ToOneRequired
+										toOneRequired2: ToOneRequired
+									}
+								})[],
+							]
+						}
 					}
-				}
-			>()
-		})
+				>()
+			})
 
-		it('types multiple expands (to-one required & to-one optional)', async () => {
-			const option = {
-				expand: [
-					{
-						key: 'toManyOptional1',
-						expand: [{ key: 'toOneRequired1' }, { key: 'toOneOptional1' }],
-					},
-				],
-			} as const satisfies BaseOption
+			it('types multiple expands (to-one required & to-one optional)', async () => {
+				const option = {
+					expand: [
+						{
+							key: 'toManyOptional1',
+							expand: [{ key: 'toOneRequired1' }, { key: 'toOneOptional1' }],
+						},
+					],
+				} as const satisfies BaseOption
 
-			expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
-				BaseCollection & {
-					expand: {
-						toManyOptional1?: [
-							ToManyOptional & {
-								expand: {
-									toOneRequired1: ToOneRequired
-									toOneOptional1?: ToOneOptional
-								}
-							},
-							...(ToManyOptional & {
-								expand: {
-									toOneRequired1: ToOneRequired
-									toOneOptional1?: ToOneOptional
-								}
-							})[],
-						]
+				expectTypeOf<
+					GetMinLength<NonNullable<Response<typeof option>['expand']['toManyOptional1']>>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toManyOptional1?: [
+								ToManyOptional & {
+									expand: {
+										toOneRequired1: ToOneRequired
+										toOneOptional1?: ToOneOptional
+									}
+								},
+								...(ToManyOptional & {
+									expand: {
+										toOneRequired1: ToOneRequired
+										toOneOptional1?: ToOneOptional
+									}
+								})[],
+							]
+						}
 					}
-				}
-			>()
-		})
+				>()
+			})
 
-		it('types multiple expands (to-one optional x2)', async () => {
-			const option = {
-				expand: [
-					{
-						key: 'toManyOptional1',
-						expand: [{ key: 'toOneOptional1' }, { key: 'toOneOptional2' }],
-					},
-				],
-			} as const satisfies BaseOption
+			it('types multiple expands (to-one optional x2)', async () => {
+				const option = {
+					expand: [
+						{
+							key: 'toManyOptional1',
+							expand: [{ key: 'toOneOptional1' }, { key: 'toOneOptional2' }],
+						},
+					],
+				} as const satisfies BaseOption
 
-			expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
-				BaseCollection & {
-					expand: {
-						toManyOptional1?: [
-							ToManyOptional & {
-								expand: {
-									toOneOptional1?: ToOneOptional
-									toOneOptional2?: ToOneOptional
-								}
-							},
-							...(ToManyOptional & {
-								expand: {
-									toOneOptional1?: ToOneOptional
-									toOneOptional2?: ToOneOptional
-								}
-							})[],
-						]
+				expectTypeOf<
+					GetMinLength<NonNullable<Response<typeof option>['expand']['toManyOptional1']>>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toManyOptional1?: [
+								ToManyOptional & {
+									expand: {
+										toOneOptional1?: ToOneOptional
+										toOneOptional2?: ToOneOptional
+									}
+								},
+								...(ToManyOptional & {
+									expand: {
+										toOneOptional1?: ToOneOptional
+										toOneOptional2?: ToOneOptional
+									}
+								})[],
+							]
+						}
 					}
-				}
-			>()
-		})
+				>()
+			})
 
-		it('types multiple expands (to-many required x2)', async () => {
-			const option = {
-				expand: [
-					{
-						key: 'toManyOptional1',
-						expand: [{ key: 'toManyRequired1' }, { key: 'toManyRequired2' }],
-					},
-				],
-			} as const satisfies BaseOption
+			it('types multiple expands (to-many required x2)', async () => {
+				const option = {
+					expand: [
+						{
+							key: 'toManyOptional1',
+							expand: [{ key: 'toManyRequired1' }, { key: 'toManyRequired2' }],
+						},
+					],
+				} as const satisfies BaseOption
 
-			expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
-				BaseCollection & {
-					expand: {
-						toManyOptional1?: [
-							ToManyOptional & {
-								expand: {
-									toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
-									toManyRequired2: [ToManyRequired, ...ToManyRequired[]]
-								}
-							},
-							...(ToManyOptional & {
-								expand: {
-									toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
-									toManyRequired2: [ToManyRequired, ...ToManyRequired[]]
-								}
-							})[],
-						]
+				expectTypeOf<
+					GetMinLength<NonNullable<Response<typeof option>['expand']['toManyOptional1']>>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toManyOptional1?: [
+								ToManyOptional & {
+									expand: {
+										toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
+										toManyRequired2: [ToManyRequired, ...ToManyRequired[]]
+									}
+								},
+								...(ToManyOptional & {
+									expand: {
+										toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
+										toManyRequired2: [ToManyRequired, ...ToManyRequired[]]
+									}
+								})[],
+							]
+						}
 					}
-				}
-			>()
-		})
+				>()
+			})
 
-		it('types multiple expands (to-many required & to-many optional)', async () => {
-			const option = {
-				expand: [
-					{
-						key: 'toManyOptional1',
-						expand: [{ key: 'toManyRequired1' }, { key: 'toManyOptional1' }],
-					},
-				],
-			} as const satisfies BaseOption
+			it('types multiple expands (to-many required & to-many optional)', async () => {
+				const option = {
+					expand: [
+						{
+							key: 'toManyOptional1',
+							expand: [{ key: 'toManyRequired1' }, { key: 'toManyOptional1' }],
+						},
+					],
+				} as const satisfies BaseOption
 
-			expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
-				BaseCollection & {
-					expand: {
-						toManyOptional1?: [
-							ToManyOptional & {
-								expand: {
-									toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
-									toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
-								}
-							},
-							...(ToManyOptional & {
-								expand: {
-									toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
-									toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
-								}
-							})[],
-						]
+				expectTypeOf<
+					GetMinLength<NonNullable<Response<typeof option>['expand']['toManyOptional1']>>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toManyOptional1?: [
+								ToManyOptional & {
+									expand: {
+										toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
+										toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
+									}
+								},
+								...(ToManyOptional & {
+									expand: {
+										toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
+										toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
+									}
+								})[],
+							]
+						}
 					}
-				}
-			>()
-		})
+				>()
+			})
 
-		it('types multiple expands (to-many optional x2)', async () => {
-			const option = {
-				expand: [
-					{
-						key: 'toManyOptional1',
-						expand: [{ key: 'toManyOptional1' }, { key: 'toManyOptional2' }],
-					},
-				],
-			} as const satisfies BaseOption
+			it('types multiple expands (to-many optional x2)', async () => {
+				const option = {
+					expand: [
+						{
+							key: 'toManyOptional1',
+							expand: [{ key: 'toManyOptional1' }, { key: 'toManyOptional2' }],
+						},
+					],
+				} as const satisfies BaseOption
 
-			expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
-				BaseCollection & {
-					expand: {
-						toManyOptional1?: [
-							ToManyOptional & {
-								expand: {
-									toManyOptional2?: [ToManyOptional, ...ToManyOptional[]]
-									toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
-								}
-							},
-							...(ToManyOptional & {
-								expand: {
-									toManyOptional2?: [ToManyOptional, ...ToManyOptional[]]
-									toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
-								}
-							})[],
-						]
+				expectTypeOf<
+					GetMinLength<NonNullable<Response<typeof option>['expand']['toManyOptional1']>>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toManyOptional1?: [
+								ToManyOptional & {
+									expand: {
+										toManyOptional2?: [ToManyOptional, ...ToManyOptional[]]
+										toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
+									}
+								},
+								...(ToManyOptional & {
+									expand: {
+										toManyOptional2?: [ToManyOptional, ...ToManyOptional[]]
+										toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
+									}
+								})[],
+							]
+						}
 					}
-				}
-			>()
-		})
+				>()
+			})
 
-		it('types multiple expands (to-one required & to-many required)', async () => {
-			const option = {
-				expand: [
-					{
-						key: 'toManyOptional1',
-						expand: [{ key: 'toOneRequired1' }, { key: 'toManyRequired1' }],
-					},
-				],
-			} as const satisfies BaseOption
+			it('types multiple expands (to-one required & to-many required)', async () => {
+				const option = {
+					expand: [
+						{
+							key: 'toManyOptional1',
+							expand: [{ key: 'toOneRequired1' }, { key: 'toManyRequired1' }],
+						},
+					],
+				} as const satisfies BaseOption
 
-			expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
-				BaseCollection & {
-					expand: {
-						toManyOptional1?: [
-							ToManyOptional & {
-								expand: {
-									toOneRequired1: ToOneRequired
-									toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
-								}
-							},
-							...(ToManyOptional & {
-								expand: {
-									toOneRequired1: ToOneRequired
-									toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
-								}
-							})[],
-						]
+				expectTypeOf<
+					GetMinLength<NonNullable<Response<typeof option>['expand']['toManyOptional1']>>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toManyOptional1?: [
+								ToManyOptional & {
+									expand: {
+										toOneRequired1: ToOneRequired
+										toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
+									}
+								},
+								...(ToManyOptional & {
+									expand: {
+										toOneRequired1: ToOneRequired
+										toManyRequired1: [ToManyRequired, ...ToManyRequired[]]
+									}
+								})[],
+							]
+						}
 					}
-				}
-			>()
-		})
+				>()
+			})
 
-		it('types multiple expands (to-one required & to-many optional)', async () => {
-			const option = {
-				expand: [
-					{
-						key: 'toManyOptional1',
-						expand: [{ key: 'toOneRequired1' }, { key: 'toManyOptional1' }],
-					},
-				],
-			} as const satisfies BaseOption
+			it('types multiple expands (to-one required & to-many optional)', async () => {
+				const option = {
+					expand: [
+						{
+							key: 'toManyOptional1',
+							expand: [{ key: 'toOneRequired1' }, { key: 'toManyOptional1' }],
+						},
+					],
+				} as const satisfies BaseOption
 
-			expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
-				BaseCollection & {
-					expand: {
-						toManyOptional1?: [
-							ToManyOptional & {
-								expand: {
-									toOneRequired1: ToOneRequired
-									toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
-								}
-							},
-							...(ToManyOptional & {
-								expand: {
-									toOneRequired1: ToOneRequired
-									toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
-								}
-							})[],
-						]
+				expectTypeOf<
+					GetMinLength<NonNullable<Response<typeof option>['expand']['toManyOptional1']>>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
+					BaseCollection & {
+						expand: {
+							toManyOptional1?: [
+								ToManyOptional & {
+									expand: {
+										toOneRequired1: ToOneRequired
+										toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
+									}
+								},
+								...(ToManyOptional & {
+									expand: {
+										toOneRequired1: ToOneRequired
+										toManyOptional1?: [ToManyOptional, ...ToManyOptional[]]
+									}
+								})[],
+							]
+						}
 					}
-				}
-			>()
-		})
+				>()
+			})
 
-		it('types multiple expands (to-one optional & to-many required)', async () => {
-			const option = {
-				expand: [
-					{
-						key: 'toManyOptional1',
-						expand: [{ key: 'toOneOptional1' }, { key: 'toManyRequired1' }],
-					},
-				],
-			} as const satisfies BaseOption
+			it('types multiple expands (to-one optional & to-many required)', async () => {
+				const option = {
+					expand: [
+						{
+							key: 'toManyOptional1',
+							expand: [{ key: 'toOneOptional1' }, { key: 'toManyRequired1' }],
+						},
+					],
+				} as const satisfies BaseOption
 
-			expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
-				Prettify<
+				expectTypeOf<
+					GetMinLength<NonNullable<Response<typeof option>['expand']['toManyOptional1']>>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
 					BaseCollection & {
 						expand: {
 							toManyOptional1?: [
@@ -1983,22 +2292,24 @@ describe('PBResponseType', () => {
 							]
 						}
 					}
-				>
-			>()
-		})
+				>()
+			})
 
-		it('types multiple expands (to-one optional & to-many optional)', async () => {
-			const option = {
-				expand: [
-					{
-						key: 'toManyOptional1',
-						expand: [{ key: 'toOneOptional1' }, { key: 'toManyOptional1' }],
-					},
-				],
-			} as const satisfies BaseOption
+			it('types multiple expands (to-one optional & to-many optional)', async () => {
+				const option = {
+					expand: [
+						{
+							key: 'toManyOptional1',
+							expand: [{ key: 'toOneOptional1' }, { key: 'toManyOptional1' }],
+						},
+					],
+				} as const satisfies BaseOption
 
-			expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
-				Prettify<
+				expectTypeOf<
+					GetMinLength<NonNullable<Response<typeof option>['expand']['toManyOptional1']>>
+				>().toEqualTypeOf<'1'>()
+
+				expectTypeOf<Response<typeof option>>().branded.toEqualTypeOf<
 					BaseCollection & {
 						expand: {
 							toManyOptional1?: [
@@ -2017,8 +2328,8 @@ describe('PBResponseType', () => {
 							]
 						}
 					}
-				>
-			>()
+				>()
+			})
 		})
 	})
 })

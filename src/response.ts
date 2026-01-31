@@ -42,8 +42,8 @@ type ProcessSingleExpand<
 	TSchema extends SchemaDeclaration,
 	TTableName extends keyof TSchema,
 	TExpand extends Expand<TSchema, TTableName>,
-	_Rel extends
-		SchemaParser<TSchema>[TTableName][TExpand['key']] = SchemaParser<TSchema>[TTableName][TExpand['key']],
+	_Rel extends SchemaParser<TSchema>[TTableName][TExpand['key']] =
+		SchemaParser<TSchema>[TTableName][TExpand['key']],
 	_Obj = _Rel['type'],
 > = HandleArray<
 	(FieldsArrayToUnion<TExpand['fields']> extends infer Fields extends keyof _Obj
