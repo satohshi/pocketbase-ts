@@ -1,5 +1,15 @@
 # pocketbase-ts
 
+## 1.6.0
+
+### Minor Changes
+
+- ed37262: add new helper functions for filter and sort (closes #29)
+
+### Patch Changes
+
+- a527b0c: make to-many relations in expand a tuple (closes #27)
+
 ## 1.5.1
 
 ### Patch Changes
