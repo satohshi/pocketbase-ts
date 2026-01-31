@@ -36,6 +36,7 @@
 	},
 	"devDependencies": {
 		"@changesets/cli": "^2.29.8",
+		"@types/node": "^25.1.0",
 		"@typescript/native-preview": "7.0.0-dev.20260131.1",
 		"@vitest/ui": "^4.0.18",
 		"prettier": "^3.8.1",
