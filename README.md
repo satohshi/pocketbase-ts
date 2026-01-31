@@ -1,19 +1,36 @@
 # PocketBase Typed SDK
 
-A small wrapper around the official [PocketBase JavaScript SDK](https://github.com/pocketbase/js-sdk) that allows you to write options in a more human-readable way, and also types the response for you.
+- [PocketBase Typed SDK](#pocketbase-typed-sdk)
+    - [Overview](#overview)
+    - [Demo](#demo)
+    - [Installation](#installation)
+    - [Usage](#usage)
+        - [Defining schema](#defining-schema)
+            - [Schema interface](#schema-interface)
+        - [Instantiating the SDK](#instantiating-the-sdk)
+        - [Building query](#building-query)
+    - [Helper functions for `filter` and `sort`](#helper-functions-for-filter-and-sort)
+        - [Filter](#filter)
+            - [and](#and)
+            - [or](#or)
+            - [eq/ne](#eqne)
+            - [gt/gte/lt/lte](#gtgteltlte)
+            - [like/notLike](#likenotlike)
+            - [anyEq/anyNe](#anyeqanyne)
+            - [anyGt/anyGte/anyLt/anyLte](#anygtanygteanyltanylte)
+            - [anyLike/anyNotLike](#anylikeanynotlike)
+            - [between/notBetween](#betweennotbetween)
+            - [inArray/notInArray](#inarraynotinarray)
+        - [Sort](#sort)
+        - [Maximum expand depth](#maximum-expand-depth)
+    - [Caveats:](#caveats)
+        - [Back-relations](#back-relations)
+        - [Dealing with tables with exactly the same properties](#dealing-with-tables-with-exactly-the-same-properties)
+        - [Batch requests](#batch-requests)
 
-This is how you would normally write options for the PocketBase SDK:
+## Overview
 
-```js
-const postsWithAuthorAndComments = await pb.collection('posts').getFullList({
-    expand: 'author,comments_via_post',
-    fields: 'id,title,expand.author.id,expand.author.name,expand.comments_via_post.id,expand.comments_via_post.message',
-})
-```
-
-Writing options manually like this is very error-prone, and makes the code very hard to read and maintain.
-
-This wrapper allows you to write it like this instead:
+`pocketbase-ts` is a wrapper around the official [PocketBase JavaScript SDK](https://github.com/pocketbase/js-sdk) that allows you to write options like this:
 
 ```js
 const postsWithAuthorAndComments = await pb.collection('posts').getFullList({
@@ -31,7 +48,16 @@ const postsWithAuthorAndComments = await pb.collection('posts').getFullList({
 })
 ```
 
-It comes with autocomplete for `key`, `fields`, `expand`, `filter`, and `sort` options, and also properly **types the response** as:
+instead of:
+
+```js
+const postsWithAuthorAndComments = await pb.collection('posts').getFullList({
+    expand: 'author,comments_via_post',
+    fields: 'id,title,expand.author.id,expand.author.name,expand.comments_via_post.id,expand.comments_via_post.message',
+})
+```
+
+and types the response as:
 
 ```ts
 type PostsWithAuthorAndComments = Pick<Post, 'id' | 'title'> & {
@@ -41,6 +67,8 @@ type PostsWithAuthorAndComments = Pick<Post, 'id' | 'title'> & {
     }
 }
 ```
+
+It comes with autocomplete for collection names, field names, relation names, etc.
 
 ## Demo
 
@@ -59,15 +87,32 @@ npm install pocketbase-ts
 pnpm add pocketbase-ts
 ```
 
+```sh
+bun add pocketbase-ts
+```
+
 ## Usage
 
-Except for the features described below (i.e. the query options), everything from the official SDK is left **as is**.
+Except for the features described below (i.e., the query options), everything from the official SDK is left as-is.
 
 ### Defining schema
 
 > [!TIP]
 > I recommend using [this hook](https://github.com/satohshi/pocketbase-ts-schema-generator) to generate the schema.  
 > It will watch for any changes made to the collections and update the schema file accordingly, keeping everything in sync.
+
+#### Schema interface
+
+```ts
+interface SchemaDeclaration {
+    [collectionName: string]: {
+        type: Record<PropertyKey, any> // collection type
+        relations?: {
+            [fieldName: string]: Record<PropertyKey, any> // relation type
+        }
+    }
+}
+```
 
 Below is an example of how you would define the schema for [this](https://pocketbase.io/docs/working-with-relations/) in the PocketBase docs.
 
@@ -146,6 +191,7 @@ Use it just like you would with the official SDK, but with a more readable optio
 const result = await pb.collection('posts').getOne({
     // you can specify fields to be returned in the response
     fields: ['id', 'title', 'tags'],
+
     expand: [
         {
             // returns all fields if not specified
@@ -153,13 +199,15 @@ const result = await pb.collection('posts').getOne({
         },
         {
             key: 'comments_via_post',
+
             // you can use `:excerpt` modifier on string fields
             fields: ['message:excerpt(20)'],
+
             // nesting `expand` is supported
             expand: [
                 {
                     key: 'user',
-                    fields: ['name'],
+                    fields: ['id', 'name'],
                 },
             ],
         },
@@ -170,98 +218,142 @@ const result = await pb.collection('posts').getOne({
 The result is automatically typed as:
 
 ```ts
-type Result = Pick<Post, 'tags' | 'id' | 'title'> & {
+type Result = Pick<Post, 'id' | 'title' | 'tags'> & {
     expand: {
         author: User
         comments_via_post?: (Pick<Comment, 'message'> & {
             expand: {
-                user: Pick<User, 'name'>
+                user: Pick<User, 'id' | 'name'>
             }
         })[]
     }
 }
 ```
 
-## Helper for `filter` & `sort`
+## Helper functions for `filter` and `sort`
 
-While you can still write `filter` and `sort` as string, you can also use the provided `$` tagged template literal helper to get intellisense for the field names.
+While you can still write `filter` and `sort` as plain strings, `pocketbase-ts` provides several helper functions that allow you to build them in a type-safe manner.
+
+### Filter
+
+For filters, you can use Drizzle-like functions.
 
 ```ts
 const result = await pb.collection('posts').getFullList({
-    filter: ({ $ }) => $`${'author.role'} = "admin" && ${'comments_via_post.message'} ?~ 'hello'`,
-    sort: ({ $ }) => $`${'created'},${'author.name'}`,
-    expand: [{ key: 'comments_via_post' }],
+    filter: ({ and, eq, gte }) => {
+        return and(eq('author.verified', true), gte('likes', 10))
+    },
 })
 ```
 
-This function is merely there to provide you with intellisense and help mitigate typos. It does not do any type narrowing or validation.  
-(i.e. the example above will still have `?` modifier on `expand.comments_via_post` in the response type.)
+Except for `and` and `or`, all helper functions take a field name as the first argument and a value or another field name to compare as the second/third argument.
+
+> [!IMPORTANT]
+> Since the schema only exists at the type level, these helpers cannot distinguish between a field name and a generic string at runtime.  
+> So if you want to pass a generic string as the value, you need to wrap it in either single or double quotes.
+
+#### and
+
+```ts
+and(eq('title', '"foo"'), gt('likes', 30)) // => (title="foo"&&likes>30)
+```
+
+#### or
+
+```ts
+or(eq('title', '"foo"'), eq('title', '"bar"')) // => (title="foo"||title="bar")
+```
+
+#### eq/ne
+
+```ts
+eq('likes', 5) // => likes=5
+eq('verified', true) // => verified=true
+eq('title', '"foo"') // => title="foo"
+eq('tags:length', 3) // => tags:length=3
+```
+
+#### gt/gte/lt/lte
+
+```ts
+gt('likes', 10) // => likes>10
+gt('tags:length', 3) // => tags:length>3
+gt('year', '@year') // => year>@year
+
+gt('date', '"2000-01-01"') // => date>"2000-01-01"
+gt('datetime', '@now') // => datetime>@now
+```
+
+#### like/notLike
+
+```ts
+like('title', '"foo"') // => title~"foo"
+```
+
+#### anyEq/anyNe
+
+```ts
+anyEq('tags.name', '"foo"') // => tags.name?="foo"
+anyEq('posts_via_author.published', true) // => posts_via_author.published?=true
+anyEq('@collection.courseRegistrations.user', 'id') // => @collection.courseRegistrations.user?=id
+```
+
+#### anyGt/anyGte/anyLt/anyLte
+
+```ts
+anyGt('posts_via_author.likes', 10) // => posts_via_author.likes>10
+anyGt('posts_via_author.date', '"2000-01-01"') // => posts_via_author.date>"2000-01-01"
+```
+
+#### anyLike/anyNotLike
+
+```ts
+anyLike('tags.name', '"foo"') // => tags.name?~"foo"
+anyLike('posts_via_author.title', '"foo"') // => posts_via_author.title?~"foo"
+```
+
+#### between/notBetween
+
+```ts
+between('likes', 10, 100) // => (likes>=10&&likes<=100)
+
+notBetween('date', '"2000-01-01"', '"2001-01-01"') // => (date<"2000-01-01"||date>"2001-01-01")
+```
+
+#### inArray/notInArray
+
+```ts
+inArray('likes', [1, 3, 5]) // => (likes=1||likes=3||likes=5)
+
+notInArray('title', ['"foo"', '"bar"', '"baz"']) // => (title!="foo"&&title!="bar"&&title!="baz")
+```
+
+At the moment, these helper functions do not perform any type narrowing.  
+(e.g. `eq('tags:length', 3)` won't make `tags` in the response type `[string, string, string]`. It'll still be `string[]`.)
+
+### Sort
+
+For sort, you can use the `sortBy` function.
+
+```ts
+const result = await pb.collection('posts').getFullList({
+    sort: ({ sortBy }) => {
+        return sortBy('author.name', 'title', '-likes') // => 'author.name,title,-likes'
+    },
+})
+```
 
 ### Maximum expand depth
 
 While PocketBase supports expanding relations up to 6 levels deep, the number of fields increases exponentially with each level.  
 The performance hit was very noticeable when I tried to set it to 6 even with the simple schema in the example above.
 
-As such, I've set the maximum depth to 2 by default.
+As such, I've set the default maximum depth for these helpers to 2.
 
 However, should you wish to expand further, you can adjust the maximum depth by passing it as the second type argument when instantiating the SDK.
 
 ```ts
-const pb = new PocketBaseTS<Schema, 6>('')
-```
-
-## Type for `Schema`:
-
-```ts
-interface SchemaDeclaration {
-    [collectionName: string]: {
-        type: Record<PropertyKey, any> // collection type
-        relations?: {
-            [fieldName: string]: Record<PropertyKey, any> // relation type
-        }
-    }
-}
-```
-
-## Handling of `expand`
-
-Let's say you want to fetch a post with its comments using `expand`.  
-When the post doesn't have any comments, PocketBase returns something like this:
-
-```json
-{
-    "id": "1",
-    "title": "Lorem ipsum",
-    "tags": ["lorem", "ipsum"],
-    "expand": {},
-    "created": "2024-01-01T00:00:00.000Z",
-    "updated": "2024-01-01T00:00:00.000Z"
-}
-```
-
-instead of:
-
-```json
-{
-    "id": "1",
-    "title": "Lorem ipsum",
-    "tags": ["lorem", "ipsum"],
-    "expand": {
-        "comments_via_post": []
-    },
-    "created": "2024-01-01T00:00:00.000Z",
-    "updated": "2024-01-01T00:00:00.000Z"
-}
-```
-
-So pocketbase-ts adds `?` modifiers to optional relation fields in `expand`.
-
-```ts
-type Response = Post & {
-    expand: {
-        comments_via_post?: Comment[]
-    }
-}
+const pb = new PocketBaseTS<Schema, 6>()
 ```
 
 ## Caveats:
@@ -273,7 +365,7 @@ The former can be dealt with by simply adding the non-null assertion operator `!
 
 If you have a `UNIQUE` index constraint on the relation field, the item in `expand` will be of type `T` instead of `T[]`.
 
-In such case, you can override the default behaviour by explicitly defining back-relations yourself in the schema.
+In such cases, you can override the default behaviour by explicitly defining back-relations yourself in the schema.
 
 ```diff
 type Schema = {
