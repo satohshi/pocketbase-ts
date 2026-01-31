@@ -28,7 +28,7 @@ declare const {
 	notBetween,
 	inArray,
 	notInArray,
-}: FilterHelpers<TestSchema, 'posts'>
+}: FilterHelpers<TestSchema, 'posts', 2>
 
 describe('$', () => {
 	it('accept any type of value in filter helper', () => {
@@ -111,7 +111,7 @@ describe('eq/ne', () => {
 	})
 
 	it('random (users)', () => {
-		const { eq } = {} as FilterHelpers<TestSchema, 'users'>
+		const { eq } = {} as FilterHelpers<TestSchema, 'users', 2>
 
 		eq('posts_via_author.tags.id', '"a"')
 

@@ -6,7 +6,7 @@ type AscAndDesc<T> = T extends `-${infer Field}` ? T | Field : T | `-${T & strin
 export type SortBy<
 	TSchema extends SchemaDeclaration,
 	TCollectionName extends keyof TSchema,
-	_MaxDepth extends number = 2,
+	_MaxDepth extends number,
 	_AscFields extends SortKeys<TSchema, TCollectionName, _MaxDepth> = SortKeys<
 		TSchema,
 		TCollectionName,
@@ -16,6 +16,6 @@ export type SortBy<
 	_Args = _AscFields | _DescFields,
 > = <const T extends _Args[]>(...fields: [...T, Exclude<_Args, AscAndDesc<T[number]>>]) => string
 
-export const sortBy: SortBy<SchemaDeclaration, keyof SchemaDeclaration> = (...fields) => {
+export const sortBy: SortBy<SchemaDeclaration, keyof SchemaDeclaration, 0> = (...fields) => {
 	return fields.join(',')
 }

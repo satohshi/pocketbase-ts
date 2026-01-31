@@ -13,7 +13,7 @@ type Stringifiable = string | number | boolean
 export type FilterHelpers<
 	TSchema extends SchemaDeclaration,
 	TCollectionName extends keyof TSchema,
-	_MaxDepth extends number = 2,
+	_MaxDepth extends number,
 	_ThisSchema extends FieldsMapForFilter<TSchema, TCollectionName, _MaxDepth> =
 		FieldsMapForFilter<TSchema, TCollectionName, _MaxDepth>,
 	_AtCollection extends CollectionRef<TSchema> = CollectionRef<TSchema>,
@@ -257,7 +257,7 @@ export const filterHelpers = {
 
 	inArray: (a, b) => `(${b.map((x) => `${a}=${x}`).join('||')})` as any,
 	notInArray: (a, b) => `(${b.map((x) => `${a}!=${x}`).join('&&')})` as any,
-} as const satisfies FilterHelpers<SchemaDeclaration, keyof SchemaDeclaration>
+} as const satisfies FilterHelpers<SchemaDeclaration, keyof SchemaDeclaration, 0>
 
 type InArrayReturnType<
 	TField extends string,

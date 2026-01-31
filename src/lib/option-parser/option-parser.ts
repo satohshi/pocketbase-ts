@@ -7,13 +7,15 @@ import type { SchemaDeclaration } from '../../schema.js'
 export type Options = {
 	fields?: string[]
 	expand?: Expand[]
-	filter?: string | ((arg: FilterHelpers<SchemaDeclaration, keyof SchemaDeclaration>) => string)
+	filter?:
+		| string
+		| ((arg: FilterHelpers<SchemaDeclaration, keyof SchemaDeclaration, 0>) => string)
 	sort?:
 		| string
 		| ((arg: {
 				// TODO: remove in next minor release
-				$: FilterHelpers<SchemaDeclaration, keyof SchemaDeclaration>['$']
-				sortBy: SortBy<SchemaDeclaration, keyof SchemaDeclaration>
+				$: FilterHelpers<SchemaDeclaration, keyof SchemaDeclaration, 0>['$']
+				sortBy: SortBy<SchemaDeclaration, keyof SchemaDeclaration, 0>
 		  }) => string)
 }
 

@@ -50,7 +50,7 @@ describe('PocketBaseTS', () => {
 				options: Options<TestSchema, 'posts', 2, 'list'>
 			) => Parameters<(typeof posts)[T[I]]>
 			getFilterArg?: (
-				filter?: string | ((filter: FilterHelpers<TestSchema, 'posts'>) => string)
+				filter?: string | ((filter: FilterHelpers<TestSchema, 'posts', 1>) => string)
 			) => Parameters<(typeof posts)[T[I]]>
 		}
 	}) {

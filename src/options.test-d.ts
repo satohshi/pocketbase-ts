@@ -14,7 +14,7 @@ describe('list', () => {
 			})
 
 			it('lets you use helper functions', () => {
-				expectTypeOf<(helpers: FilterHelpers<TestSchema, 'posts'>) => string>().toExtend<
+				expectTypeOf<(helpers: FilterHelpers<TestSchema, 'posts', 0>) => string>().toExtend<
 					PostOption['filter']
 				>()
 			})
@@ -47,7 +47,7 @@ describe('list', () => {
 			it('lets you use sort helper function', () => {
 				expectTypeOf<
 					(helpers: {
-						$: FilterHelpers<TestSchema, 'posts', 2>['$']
+						$: FilterHelpers<TestSchema, 'posts', 0>['$']
 						sortBy: SortBy<TestSchema, 'posts', 2>
 					}) => string
 				>().toExtend<PostOption['sort']>()

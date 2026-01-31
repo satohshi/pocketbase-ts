@@ -2,7 +2,7 @@ import { describe, it } from 'vitest'
 import type { SortBy } from './sort.js'
 import type { TestSchema } from '../../schema.test-d.js'
 
-declare const sortBy: SortBy<TestSchema, 'posts'>
+declare const sortBy: SortBy<TestSchema, 'posts', 2>
 
 describe('sort helper', () => {
 	it('errors when no arg is passed', () => {

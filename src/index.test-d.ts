@@ -13,8 +13,8 @@ import type {
 	RecordOptions,
 } from 'pocketbase'
 
-type PostListOption = Options<TestSchema, 'posts', 2, 'list'>
-type Response<T extends PostListOption> = PBResponseType<TestSchema, 'posts', T, 2>
+type PostListOption = Options<TestSchema, 'posts', 1, 'list'>
+type Response<T extends PostListOption> = PBResponseType<TestSchema, 'posts', T, 1>
 
 describe('PocketBaseTS', () => {
 	const pb = new PocketBaseTS<TestSchema>()
@@ -68,7 +68,7 @@ describe('PocketBaseTS', () => {
 					pb.collection('posts').subscribe('*', () => {}, {
 						filter: (helpers) => {
 							expectTypeOf(helpers).toEqualTypeOf<
-								FilterHelpers<TestSchema, 'posts'>
+								FilterHelpers<TestSchema, 'posts', 0>
 							>()
 							return ''
 						},
@@ -128,7 +128,7 @@ describe('PocketBaseTS', () => {
 
 				type PostFullListOption = MergeObjects<
 					RecordFullListOptions,
-					Options<TestSchema, 'posts', 2, 'list'>
+					Options<TestSchema, 'posts', 1, 'list'>
 				>
 
 				expectTypeOf<Param>().toEqualTypeOf<PostFullListOption | undefined>()
@@ -197,7 +197,7 @@ describe('PocketBaseTS', () => {
 
 				type PostFullListOptions = MergeObjects<
 					RecordListOptions,
-					Options<TestSchema, 'posts', 2, 'list'>
+					Options<TestSchema, 'posts', 1, 'list'>
 				>
 
 				expectTypeOf<Param>().toEqualTypeOf<PostFullListOptions>()
@@ -266,7 +266,7 @@ describe('PocketBaseTS', () => {
 
 				type PostListOptions = MergeObjects<
 					RecordListOptions,
-					Options<TestSchema, 'posts', 2, 'list'>
+					Options<TestSchema, 'posts', 1, 'list'>
 				>
 
 				expectTypeOf<Param>().toEqualTypeOf<PostListOptions>()
