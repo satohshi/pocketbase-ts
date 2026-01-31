@@ -1,5 +1,11 @@
 # pocketbase-ts
 
+## 1.6.1
+
+### Patch Changes
+
+- 4e9bcdc: fix modules not being exported properly due to change in `rootDir` default in tsc=>tsgo
+
 ## 1.6.0
 
 ### Minor Changes
