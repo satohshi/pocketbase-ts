@@ -1,5 +1,11 @@
 # pocketbase-ts
 
+## 1.6.2
+
+### Patch Changes
+
+- 2713eb8: make the default expand depth 1
+
 ## 1.6.1
 
 ### Patch Changes
