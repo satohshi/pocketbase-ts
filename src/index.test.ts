@@ -1,6 +1,5 @@
 import { PocketBaseTS } from './index.js'
 import { describe, it, vi, afterEach, beforeAll, afterAll } from 'vitest'
-import type { Mock } from 'vitest'
 import type { Options } from './options.js'
 import type { TestSchema } from './schema.test-d.js'
 import type { FilterHelpers } from './lib/filter-sort-helper/filter.js'
@@ -13,15 +12,14 @@ describe('PocketBaseTS', () => {
 	const pb = new PocketBaseTS<TestSchema>()
 	const posts = pb.collection('posts')
 
+	const mockFetch = vi.fn().mockResolvedValue({
+		json: async () => {
+			return { items: [''] }
+		},
+	})
+
 	beforeAll(() => {
-		vi.stubGlobal(
-			'fetch',
-			vi.fn().mockResolvedValue({
-				json: async () => {
-					return { items: [''] }
-				},
-			})
-		)
+		vi.stubGlobal('fetch', mockFetch)
 	})
 
 	afterAll(() => {
@@ -33,7 +31,7 @@ describe('PocketBaseTS', () => {
 	): string | null {
 		const regex = new RegExp(`${key}=(.+?)(&|$)`)
 
-		const url = (global.fetch as Mock).mock.lastCall![0] as string
+		const url = mockFetch.mock.lastCall![0] as string
 		const match = url.match(regex)
 		if (!match) {
 			return null
@@ -418,7 +416,7 @@ describe('PocketBaseTS', () => {
 		})
 
 		function getOptions(): { filter?: string; expand?: string; fields?: string } {
-			const body = JSON.parse((global.fetch as Mock).mock.lastCall![1].body)
+			const body = JSON.parse(mockFetch.mock.lastCall![1].body)
 			const subscription = body.subscriptions[0]
 
 			const decoded = decodeURIComponent(subscription)
